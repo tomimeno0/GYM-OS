@@ -1,6 +1,6 @@
 # Estado de entrega
 
-El producto manual está implementado. La IA quedó diferida por pedido explícito del usuario; no es una funcionalidad fallida o simulada. La publicación remota todavía está pendiente y no se declara una entrega final hasta comprobarla.
+El producto manual está implementado. La IA quedó diferida por pedido explícito del usuario; no es una funcionalidad fallida o simulada. El código se publica en el repositorio público [tomimeno0/GYM-OS](https://github.com/tomimeno0/GYM-OS).
 
 ## Implementado
 
@@ -21,9 +21,9 @@ También se extrajo el árbol de la aplicación a una ruta limpia, sin `.env` ni
 
 La revisión visual comprobó panel vacío y con datos, rutinas, nutrición y navegación móvil a 390 px. Se corrigieron contraste, etiquetas de formularios, manejo de errores de conexión y desplazamiento del menú móvil para acceder a cerrar sesión. Las capturas usan datos ficticios y están en `docs/screenshots/`. Consultar [PRUEBAS.md](PRUEBAS.md) para alcance y limitaciones.
 
-## Pendiente externo
+## Publicación
 
-Crear y verificar el repositorio público `tomimeno0/GYM-OS`. El conector vinculado no tiene operación para crear repositorios, y tanto Chrome como el navegador integrado mostraron GitHub sin sesión iniciada. Se pidió al usuario iniciar sesión en Chrome. No se publicó código ni se subieron adjuntos privados.
+Repositorio público: [github.com/tomimeno0/GYM-OS](https://github.com/tomimeno0/GYM-OS). El flujo `verify.yml` repite formato, pruebas de backend, build, pruebas E2E y auditoría de dependencias en cada publicación a `main` y en cada pull request.
 
 SMTP y hosting de producción requieren configurar un proveedor y un dominio propios. No son necesarios para ejecutar el sistema localmente: el correo de desarrollo queda en archivos privados. No se inventan credenciales, destinatarios ni una URL pública de despliegue.
 

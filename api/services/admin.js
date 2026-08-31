@@ -90,7 +90,7 @@ export const saveRole = (actorId, id, data) => {
   const operation = id ? 'modificarRoles' : 'crearRoles';
   return new Administrador({}, { [operation]: () => saveRoleImpl(actorId, id, data) })[operation]();
 };
-export async function deleteRole(actorId, id) {
+async function deleteRoleImpl(actorId, id) {
   return atomic(async (transaction) => {
     await authorizeActor(actorId, 'roles:manage', transaction);
     const role = await models.roles.findByPk(id, { transaction });
@@ -106,6 +106,8 @@ export async function deleteRole(actorId, id) {
     await audit(transaction, actorId, 'CU036_ELIMINAR_ROL', 'administracion');
   });
 }
+export const deleteRole = (...args) =>
+  new Administrador({}, { modificarRoles: () => deleteRoleImpl(...args) }).modificarRoles();
 async function assignRolesImpl(actorId, targetId, roleIds) {
   return atomic(async (transaction) => {
     await authorizeActor(actorId, 'roles:manage', transaction);

@@ -271,6 +271,32 @@ svg {
   margin-top: 24px;
   flex-wrap: wrap;
 }
+.consent-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  margin-top: 18px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #f7f9f3;
+  cursor: pointer;
+}
+.consent-card input {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--green);
+}
+.consent-card span,
+.consent-card small {
+  display: block;
+}
+.consent-card small {
+  margin-top: 5px;
+  color: var(--muted);
+  line-height: 1.5;
+}
 .notice {
   display: flex;
   gap: 10px;

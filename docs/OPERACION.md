@@ -29,8 +29,9 @@ Las migraciones son versionadas e idempotentes. La segunda añade valores inicia
 | `COHERE_API_KEY`                                                                   | Clave privada de Cohere; solo en `.env` o gestor de secretos                    |
 | `COHERE_MODEL`                                                                     | Modelo Cohere; por defecto `command-a-plus-05-2026`                             |
 | `AI_MOCK`                                                                          | Solo pruebas automatizadas; nunca activar en producción                         |
+| `AI_TIMEOUT_MS`                                                                    | Timeout por intento contra Cohere; 60000 ms por defecto                         |
 
-La integración IA realiza llamadas HTTPS a Cohere. La clave no se devuelve en estado, logs ni errores. Las respuestas estructuradas se validan con Zod antes de iniciar la transacción de persistencia; un fallo del proveedor o un JSON inválido no guarda planes parciales. `AI_MOCK=true` se reserva para pruebas deterministas.
+La integración IA realiza llamadas HTTPS a Cohere únicamente después del consentimiento del usuario. La clave no se devuelve en estado, logs ni errores. Las respuestas estructuradas se validan con Zod y límites de seguridad antes de iniciar la transacción; un fallo, timeout, JSON inválido o plan inseguro no guarda cambios parciales. Solo se reintentan una vez los timeouts, `429` y errores `5xx`; los errores de contrato no se ocultan. `AI_MOCK=true` se reserva para pruebas deterministas.
 
 ## Despliegue real
 

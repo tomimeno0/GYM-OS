@@ -40,6 +40,18 @@ before(async () => {
     }),
     201,
   );
+  ok(await send('patch', '/me', { consentimiento_ia: true }));
+});
+
+test('AI requires explicit consent before any personal data is shared', async () => {
+  ok(await send('patch', '/me', { consentimiento_ia: false }));
+  const response = await send('post', '/ai/chat', {
+    modo: 'entrenador',
+    consulta: '¿Cómo descanso entre series?',
+  });
+  assert.equal(response.status, 403);
+  assert.equal(response.body.error.code, 'AI_CONSENT_REQUIRED');
+  ok(await send('patch', '/me', { consentimiento_ia: true }));
 });
 
 after(() => sequelize.close());
@@ -120,7 +132,7 @@ test('CU015, CU019, CU023, CU026 and CU031 execute end to end', async (t) => {
     assert.equal(adapted.tipo_generacion, 'ia');
   });
 
-  await t.test('CU031 stores scoped conversations and rejects unrelated requests', async () => {
+  await t.test('CU031 stores scoped conversations and refuses unrelated requests', async () => {
     const chat = ok(
       await send('post', '/ai/chat', {
         modo: 'entrenador',
@@ -136,17 +148,15 @@ test('CU015, CU019, CU023, CU026 and CU031 execute end to end', async (t) => {
       }),
     );
     assert.equal(continued.mensajes.length, 4);
-    assert.equal(
-      (
-        await send('post', '/ai/chat', {
-          modo: 'entrenador',
-          consulta: '¿Qué criptomoneda compro?',
-        })
-      ).status,
-      400,
+    const refused = ok(
+      await send('post', '/ai/chat', {
+        modo: 'entrenador',
+        consulta: '¿Qué criptomoneda compro?',
+      }),
     );
-    assert.equal(await models.conversaciones.count(), 1);
-    assert.equal(await models.mensajes.count(), 4);
+    assert.match(refused.mensajes.at(-1).contenido, /Solo puedo ayudarte/);
+    assert.equal(await models.conversaciones.count(), 2);
+    assert.equal(await models.mensajes.count(), 6);
   });
 
   await t.test('all five IA use cases are auditable', async () => {

@@ -20,7 +20,7 @@ Los originales permanecen sin cambios y fuera del repositorio público. Los adju
 - Un objetivo activo por usuario; el historial de objetivos completados/eliminados se conserva. Rutinas y dietas admiten historial y estados.
 - Eliminar objetivo/rutina/dieta es baja lógica según sus estados del DER. Eliminar cuenta es irreversible: borra datos personales y fitness, revoca sesiones y conserva únicamente eventos de auditoría sin contenido personal.
 - CU035 contempla reemplazar roles asignados y editar definición/permisos. CU036 borra roles personalizados no asignados; protege roles del sistema y evita dejar sin administrador activo.
-- CU031 ofrece entrenador fitness y soporte de uso de GYM-OS: contempla ambas clases IA del UML. Consultas ajenas al alcance se rechazan sin ejecutar acciones.
+- CU031 ofrece entrenador fitness y soporte de uso de GYM-OS: contempla ambas clases IA del UML. Consultas ajenas al alcance reciben una negativa segura y auditable, como exige la secuencia, sin ejecutar acciones externas.
 - Recuperación responde de forma uniforme exista o no el correo para evitar enumeración de cuentas; el enlace temporal se entrega únicamente por correo. La interfaz ofrece reintento para vencimientos.
 - Cambio de alcance posterior (31/08/2026): se habilita la IA mediante Cohere por API key. No se ejecutan modelos locales. CU015, CU019, CU023, CU026 y CU031 quedan incluidos en la entrega.
 - Dataset de ejercicios: datos/textos MIT con atribución y revisión fijada. Imágenes/GIFs tienen licencia separada de Gym visual; no se redistribuyen ni se cargan por defecto sin licencia. La biblioteca textual completa funciona sin esos medios.

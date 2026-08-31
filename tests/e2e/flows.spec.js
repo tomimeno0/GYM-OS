@@ -89,6 +89,10 @@ test('full manual journey: registration, measurements, goal, routine, workout, n
   await page.getByRole('button', { name: 'Guardar comida', exact: true }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page.locator('.meal-entry')).toContainText('400');
+  await go(page, '/me');
+  await page.getByLabel('Permitir el uso de mis datos para funciones de IA').check();
+  await page.getByRole('button', { name: 'Guardar cambios' }).click();
+  await expect(page.getByRole('status')).toContainText('Tu perfil se actualizó');
   await go(page, '/asistente');
   await expect(page.getByText('DISPONIBLE', { exact: true })).toBeVisible();
   const planTools = page.locator('.ai-plan-tool');

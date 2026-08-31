@@ -66,7 +66,10 @@ export async function persistRoutine(userId, data, id, transaction, generation =
       },
       { transaction },
     );
-    await Exercises.destroy({ where: { rutina_id: id }, transaction });
+    await new Rutina(
+      {},
+      { eliminarEjercicio: () => Exercises.destroy({ where: { rutina_id: id }, transaction }) },
+    ).eliminarEjercicio();
   } else
     routine = await Routines.create(
       {
@@ -124,4 +127,4 @@ const removeRoutineImpl = (userId, id) =>
     );
   });
 export const removeRoutine = (...args) =>
-  new Rutina({}, { eliminarEjercicio: () => removeRoutineImpl(...args) }).eliminarEjercicio();
+  new Rutina({}, { eliminarRutina: () => removeRoutineImpl(...args) }).eliminarRutina();

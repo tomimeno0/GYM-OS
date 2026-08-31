@@ -4,7 +4,7 @@ import { calculateMacros } from '../../api/services/nutrition.js';
 import { goalPercentage } from '../../api/services/fitness.js';
 import { dayRange } from '../../api/lib/domain.js';
 import { exercises, searchExercises, getExercise, provenance } from '../../api/services/catalog.js';
-import { normalizeFood } from '../../api/services/foods.js';
+import { normalizeFood, searchFoods } from '../../api/services/foods.js';
 
 test('macros use per-100 values for grams/ml and per-portion values for portions', () => {
   const foods = [
@@ -83,4 +83,73 @@ test('food provider normalization distinguishes unavailable nutrition from zero 
   assert.equal(food.disponible, true);
   assert.equal(food.calorias, 0);
   assert.match(food.fuente, /Open Food Facts/);
+});
+
+test('food search validates, normalizes and caches provider results', async (t) => {
+  const originalFetch = global.fetch;
+  const originalBase = process.env.FOOD_API_BASE;
+  t.after(() => {
+    global.fetch = originalFetch;
+    if (originalBase === undefined) delete process.env.FOOD_API_BASE;
+    else process.env.FOOD_API_BASE = originalBase;
+  });
+  process.env.FOOD_API_BASE = 'https://world.openfoodfacts.org';
+  let calls = 0;
+  let requestedUrl;
+  global.fetch = async (url) => {
+    calls += 1;
+    requestedUrl = url;
+    return {
+      ok: true,
+      json: async () => ({
+        products: [
+          {
+            code: 'qa-1',
+            product_name_es: 'Avena de prueba',
+            nutriments: {
+              energy_100g: 418.4,
+              proteins_100g: 10,
+              carbohydrates_100g: 20,
+              fat_100g: 5,
+            },
+          },
+        ],
+      }),
+    };
+  };
+  const first = await searchFoods('avena-qa-unica');
+  const cached = await searchFoods('avena-qa-unica');
+  assert.equal(calls, 1);
+  assert.deepEqual(cached, first);
+  assert.equal(first.items[0].nombre, 'Avena de prueba');
+  assert.equal(first.items[0].calorias, 100);
+  assert.equal(requestedUrl.searchParams.get('search_terms'), 'avena-qa-unica');
+});
+
+test('food barcode and provider failures return domain-safe errors', async (t) => {
+  const originalFetch = global.fetch;
+  const originalBase = process.env.FOOD_API_BASE;
+  t.after(() => {
+    global.fetch = originalFetch;
+    if (originalBase === undefined) delete process.env.FOOD_API_BASE;
+    else process.env.FOOD_API_BASE = originalBase;
+  });
+  process.env.FOOD_API_BASE = 'https://world.openfoodfacts.org';
+  global.fetch = async () => ({ ok: true, json: async () => ({ status: 0 }) });
+  await assert.rejects(
+    () => searchFoods(undefined, '9999999999999'),
+    (error) => error.code === 'FOOD_NOT_FOUND',
+  );
+  global.fetch = async () => {
+    throw new Error('network');
+  };
+  await assert.rejects(
+    () => searchFoods('proveedor-caido-qa'),
+    (error) => error.code === 'FOOD_PROVIDER_UNAVAILABLE',
+  );
+  process.env.FOOD_API_BASE = 'https://invalid.example';
+  await assert.rejects(
+    () => searchFoods('config-invalida-qa'),
+    (error) => error.code === 'FOOD_CONFIG',
+  );
 });

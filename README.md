@@ -4,7 +4,7 @@ Entrenamiento, nutrición y progreso en un solo lugar. Aplicación en **JavaScri
 
 Implementa los 39 casos de uso: cuentas, perfil físico e historial, objetivos, rutinas por día, registro de entrenamientos, planes alimentarios, consumo y macros, asistente por IA, biblioteca de 1.324 ejercicios y administración de usuarios, roles, bitácora e integridad.
 
-La IA usa Cohere por API: no descarga ni ejecuta modelos locales. Configurá `COHERE_API_KEY` únicamente en `.env`; ese archivo está ignorado por Git y nunca debe publicarse.
+La IA usa Cohere por API: no descarga ni ejecuta modelos locales. Cada usuario debe otorgar consentimiento explícito antes de compartir contexto y puede revocarlo desde su perfil. Configurá `COHERE_API_KEY` únicamente en `.env`; ese archivo está ignorado por Git y nunca debe publicarse.
 
 Estado verificable de la entrega: [Estado de entrega](docs/ESTADO.md). El código fuente y su historial están publicados en este repositorio público.
 
@@ -32,6 +32,8 @@ En esta computadora con Colima y Compose independiente: `docker-compose --contex
 
 ```sh
 npm test
+npm run test:coverage
+npm run test:ai:real
 npm run build
 npx playwright install chromium
 npm run test:e2e
@@ -39,7 +41,7 @@ npm run format:check
 npm audit
 ```
 
-`npm test` reinicializa **exclusivamente `gym_os_test`**. Nunca uses esa base para datos reales. E2E ejecuta el build con API real en el puerto 3100 y MySQL de pruebas; verifica escritorio y móvil, cuentas, fitness, permisos, administración y accesibilidad. No ejecutes ambas suites simultáneamente. GitHub Actions reproduce la verificación en una instancia efímera de MySQL.
+`npm test` y `npm run test:ai:real` reinicializan **exclusivamente `gym_os_test`**. Nunca uses esa base para datos reales. La prueba real requiere una clave privada y consume cuota de Cohere. E2E reconstruye el frontend, ejecuta la API real en el puerto 3100 y verifica escritorio y móvil, cuentas, fitness, permisos, administración y accesibilidad. No ejecutes suites que compartan la base simultáneamente. GitHub Actions reproduce la verificación determinista en una instancia efímera de MySQL.
 
 ## Estructura
 

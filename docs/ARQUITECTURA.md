@@ -16,7 +16,7 @@ Las escrituras del dominio usan una transacción y bloqueo de integridad común.
 
 Los modelos sensibles nunca se serializan directamente. Respuestas seleccionan campos públicos; no devuelven password_hash, token_hash, cifrado o claves. Permisos se evalúan en servidor en cada solicitud. Protección de último administrador activo.
 
-La IA usa un adaptador HTTPS de Cohere y salida JSON estructurada. `IAService`, `Rutina.generarConIA` y `Dieta.generarConIA` coordinan generación/adaptación; la respuesta se valida antes de persistirla. Conversaciones y mensajes se guardan solo tras una respuesta válida. No se instala ni ejecuta ningún modelo local.
+La IA usa un adaptador HTTPS de Cohere y salida JSON estructurada. Requiere consentimiento explícito y revocable antes de transmitir contexto. `IAService`, `Rutina.generarConIA`, `Dieta.generarConIA` y los nombres literales de las secuencias coordinan generación/adaptación. Zod valida estructura y una segunda capa limita cargas, volumen y coherencia calórica antes de persistir. El proveedor tiene timeout, un reintento transitorio y verificación real cacheada para el estado de disponibilidad. No se instala ni ejecuta ningún modelo local.
 
 ## Frontend decidido
 

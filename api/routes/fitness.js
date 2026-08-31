@@ -166,7 +166,7 @@ const aiLimiter = rateLimit({
     error: { code: 'RATE_LIMIT', message: 'Esperá un minuto antes de volver a usar la IA.' },
   },
 });
-fitnessRouter.get('/ai/status', (req, res) => res.json(ai.aiStatus()));
+fitnessRouter.get('/ai/status', async (req, res) => res.json(await ai.aiStatus()));
 fitnessRouter.post('/ai/routines/generate', aiLimiter, async (req, res) =>
   res.status(201).json(await ai.generateRoutine(req.user.id, aiGenerateSchema.parse(req.body))),
 );

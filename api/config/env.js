@@ -33,6 +33,7 @@ export const env = {
     apiKey: process.env.COHERE_API_KEY || '',
     model: process.env.COHERE_MODEL || 'command-a-plus-05-2026',
     mock: process.env.AI_MOCK === 'true',
+    timeoutMs: Number(process.env.AI_TIMEOUT_MS || 60000),
   },
 };
 if (env.nodeEnv === 'production' && !env.origin.startsWith('https://'))

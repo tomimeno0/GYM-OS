@@ -37,7 +37,13 @@ function calculateMacrosImpl(foods) {
   return total;
 }
 export const calculateMacros = (...args) =>
-  new Comida({}, { calcularMacros: () => calculateMacrosImpl(...args) }).calcularMacros();
+  new Dieta(
+    {},
+    {
+      calcularMacros: () =>
+        new Comida({}, { calcularMacros: () => calculateMacrosImpl(...args) }).calcularMacros(),
+    },
+  ).calcularMacros();
 export async function dietDetail(id, userId, transaction) {
   const diet = await owned(Diets, id, userId, transaction, {
     where: { estado: { [Op.ne]: 'eliminada' } },
@@ -128,11 +134,20 @@ export const saveAiDiet = (userId, data, id, action) =>
     persistDiet(userId, data, id, transaction, 'ia'),
   );
 export const removeDiet = (userId, id) =>
-  writeFitness(userId, 'CU028_ELIMINAR_DIETA', 'nutricion', async (transaction) => {
-    const diet = await owned(Diets, id, userId, transaction);
-    requireActive(diet);
-    return diet.update({ estado: 'eliminada', fecha_actualizacion: new Date() }, { transaction });
-  });
+  new Dieta(
+    {},
+    {
+      eliminarDieta: () =>
+        writeFitness(userId, 'CU028_ELIMINAR_DIETA', 'nutricion', async (transaction) => {
+          const diet = await owned(Diets, id, userId, transaction);
+          requireActive(diet);
+          return diet.update(
+            { estado: 'eliminada', fecha_actualizacion: new Date() },
+            { transaction },
+          );
+        }),
+    },
+  ).eliminarDieta();
 export const saveConsumed = (userId, data, id) =>
   writeFitness(userId, 'CU029_REGISTRAR_COMIDA', 'nutricion', async (transaction) => {
     notFuture(data.fecha_consumo);

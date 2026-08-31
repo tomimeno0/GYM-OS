@@ -41,6 +41,7 @@ export const profileSchema = z
         }
       }, 'Zona horaria inválida.')
       .optional(),
+    consentimiento_ia: z.boolean().optional(),
   })
   .strict();
 export const measurementSchema = z

@@ -14,11 +14,12 @@ const {
   rutinas: Routines,
   dietas: Diets,
   entrenamientos: Workouts,
+  usuarios: Users,
   conversaciones: Conversations,
   mensajes: Messages,
 } = models;
 
-const routineJsonSchema = {
+export const routineJsonSchema = {
   type: 'object',
   required: ['nombre', 'descripcion', 'ejercicios'],
   properties: {
@@ -26,7 +27,6 @@ const routineJsonSchema = {
     descripcion: { type: 'string' },
     ejercicios: {
       type: 'array',
-      minItems: 1,
       items: {
         type: 'object',
         required: [
@@ -68,7 +68,7 @@ const foodProperties = {
   grasas_g: { type: 'number' },
   fuente: { type: 'string' },
 };
-const dietJsonSchema = {
+export const dietJsonSchema = {
   type: 'object',
   required: [
     'nombre',
@@ -88,7 +88,6 @@ const dietJsonSchema = {
     grasas_objetivo_g: { type: 'number' },
     comidas: {
       type: 'array',
-      minItems: 1,
       items: {
         type: 'object',
         required: ['nombre_comida', 'tipo_comida', 'hora', 'alimentos', 'observaciones'],
@@ -102,7 +101,6 @@ const dietJsonSchema = {
           observaciones: { type: 'string' },
           alimentos: {
             type: 'array',
-            minItems: 1,
             items: {
               type: 'object',
               required: Object.keys(foodProperties),
@@ -114,7 +112,7 @@ const dietJsonSchema = {
     },
   },
 };
-const chatJsonSchema = {
+export const chatJsonSchema = {
   type: 'object',
   required: ['relacionado', 'respuesta'],
   properties: { relacionado: { type: 'boolean' }, respuesta: { type: 'string' } },
@@ -184,7 +182,8 @@ const mockDiet = (objectiveId, adapted = false) => ({
 });
 
 async function context(userId, transaction) {
-  const [measurements, goal, routines, diets, workouts] = await Promise.all([
+  const [user, measurements, goal, routines, diets, workouts] = await Promise.all([
+    Users.findByPk(userId, { attributes: ['id', 'consentimiento_ia'], transaction }),
     Measurements.findAll({
       where: { usuario_id: userId },
       order: [['fecha_medicion', 'DESC']],
@@ -211,6 +210,7 @@ async function context(userId, transaction) {
       transaction,
     }),
   ]);
+  requireAiConsent(user);
   return dto({
     measurement: measurements[0] || null,
     measurements,
@@ -221,6 +221,57 @@ async function context(userId, transaction) {
   });
 }
 
+const requireAiConsent = (user) =>
+  assert(
+    user?.consentimiento_ia === true,
+    403,
+    'AI_CONSENT_REQUIRED',
+    'Activá el consentimiento de IA desde tu perfil antes de compartir datos con el proveedor.',
+  );
+
+const ensureAiConsent = (userId) =>
+  readFitness(userId, async (transaction) => {
+    const user = await Users.findByPk(userId, {
+      attributes: ['id', 'consentimiento_ia'],
+      transaction,
+    });
+    requireAiConsent(user);
+  });
+
+export function validateAiRoutine(data) {
+  const parsed = routineSchema.parse(data);
+  assert(
+    parsed.ejercicios.every(
+      (exercise) =>
+        exercise.series <= 10 &&
+        exercise.repeticiones <= 50 &&
+        exercise.peso_sugerido_kg <= 500 &&
+        exercise.descanso_segundos >= 15,
+    ),
+    503,
+    'AI_UNSAFE_RESPONSE',
+    'La IA propuso una rutina fuera de los límites de seguridad. No se guardó ningún cambio.',
+  );
+  return parsed;
+}
+
+export function validateAiDiet(data) {
+  const parsed = dietSchema.parse(data);
+  const macroCalories =
+    parsed.proteinas_objetivo_g * 4 +
+    parsed.carbohidratos_objetivo_g * 4 +
+    parsed.grasas_objetivo_g * 9;
+  assert(
+    parsed.calorias_objetivo >= 1200 &&
+      parsed.calorias_objetivo <= 5000 &&
+      Math.abs(macroCalories - parsed.calorias_objetivo) <= parsed.calorias_objetivo * 0.3,
+    503,
+    'AI_UNSAFE_RESPONSE',
+    'La IA propuso una dieta nutricionalmente inconsistente. No se guardó ningún cambio.',
+  );
+  return parsed;
+}
+
 const requireProfileGoal = (value) => {
   assert(
     value.measurement && value.goal,
@@ -229,161 +280,222 @@ const requireProfileGoal = (value) => {
     'Completá tu perfil físico y definí un objetivo activo antes de usar la IA.',
   );
 };
-const systemPlan = (kind) =>
-  `Sos el asistente de GYM-OS. Generá ${kind} segura, realista y no médica. Respetá estrictamente el JSON solicitado, los límites y los nombres de campos. No diagnostiques ni prometas resultados.`;
+const systemPlan = (kind) => {
+  const limits = kind.includes('dieta')
+    ? 'Usá 1200 a 5000 kcal y hacé que 4 kcal por gramo de proteína y carbohidrato más 9 kcal por gramo de grasa coincidan con las calorías dentro de un 30%.'
+    : 'Cada ejercicio debe tener 1 a 10 series, 1 a 50 repeticiones, 0 a 500 kg sugeridos y 15 a 600 segundos de descanso.';
+  return `Sos el asistente de GYM-OS. Generá ${kind} segura, realista y no médica. ${limits} Respetá estrictamente el JSON solicitado y los nombres de campos. No diagnostiques ni prometas resultados.`;
+};
+
+async function generateStructuredPlan(messages, jsonSchema, zodSchema, objectiveId, validate) {
+  let lastError;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const request =
+        attempt === 0
+          ? messages
+          : [
+              ...messages,
+              {
+                role: 'system',
+                content:
+                  'La respuesta anterior no superó las validaciones. Corregí todos los límites y devolvé únicamente un JSON válido.',
+              },
+            ];
+      return validate(parseJson(await cohereChat(request, jsonSchema), zodSchema, objectiveId));
+    } catch (error) {
+      lastError = error;
+      if (!['AI_INVALID_RESPONSE', 'AI_UNSAFE_RESPONSE'].includes(error.code)) throw error;
+    }
+  }
+  throw lastError;
+}
 
 export const generateRoutine = (userId, input) =>
   new Rutina(
     {},
     {
-      generarConIA: () =>
+      generarRutinaIA: () =>
+        new Rutina(
+          {},
+          {
+            generarConIA: () =>
+              new IAService(
+                {},
+                {
+                  generarRutina: async () => {
+                    const ctx = await readFitness(userId, (transaction) =>
+                      context(userId, transaction),
+                    );
+                    requireProfileGoal(ctx);
+                    const data = env.ai.mock
+                      ? mockRoutine(ctx.goal.id)
+                      : await generateStructuredPlan(
+                          [
+                            { role: 'system', content: systemPlan('una rutina') },
+                            {
+                              role: 'user',
+                              content: JSON.stringify({
+                                contexto: ctx,
+                                preferencias: input.preferencias,
+                              }),
+                            },
+                          ],
+                          routineJsonSchema,
+                          routineSchema,
+                          ctx.goal.id,
+                          validateAiRoutine,
+                        );
+                    return saveAiRoutine(
+                      userId,
+                      validateAiRoutine(data),
+                      null,
+                      'CU015_GENERAR_RUTINA_IA',
+                    );
+                  },
+                },
+              ).generarRutina(),
+          },
+        ).generarConIA(),
+    },
+  ).generarRutinaIA();
+
+export const adaptRoutine = (userId, id, input) =>
+  new Rutina(
+    {},
+    {
+      modificarRutinaIA: () =>
         new IAService(
           {},
           {
             generarRutina: async () => {
-              const ctx = await readFitness(userId, (transaction) => context(userId, transaction));
+              const ctx = await readFitness(userId, async (transaction) => ({
+                ...(await context(userId, transaction)),
+                actual: await routineDetail(id, userId, transaction),
+              }));
               requireProfileGoal(ctx);
+              assert(
+                ctx.workouts.length,
+                409,
+                'AI_CONTEXT_INCOMPLETE',
+                'Registrá al menos un entrenamiento antes de adaptar la rutina con IA.',
+              );
               const data = env.ai.mock
-                ? mockRoutine(ctx.goal.id)
-                : parseJson(
-                    await cohereChat(
-                      [
-                        { role: 'system', content: systemPlan('una rutina') },
-                        {
-                          role: 'user',
-                          content: JSON.stringify({
-                            contexto: ctx,
-                            preferencias: input.preferencias,
-                          }),
-                        },
-                      ],
-                      routineJsonSchema,
-                    ),
+                ? mockRoutine(ctx.goal.id, true)
+                : await generateStructuredPlan(
+                    [
+                      { role: 'system', content: systemPlan('una adaptación de rutina') },
+                      {
+                        role: 'user',
+                        content: JSON.stringify({
+                          contexto: ctx,
+                          instrucciones: input.instrucciones,
+                        }),
+                      },
+                    ],
+                    routineJsonSchema,
                     routineSchema,
                     ctx.goal.id,
+                    validateAiRoutine,
                   );
-              return saveAiRoutine(
-                userId,
-                routineSchema.parse(data),
-                null,
-                'CU015_GENERAR_RUTINA_IA',
-              );
+              return saveAiRoutine(userId, validateAiRoutine(data), id, 'CU019_ADAPTAR_RUTINA_IA');
             },
           },
         ).generarRutina(),
     },
-  ).generarConIA();
-
-export const adaptRoutine = (userId, id, input) =>
-  new IAService(
-    {},
-    {
-      generarRutina: async () => {
-        const ctx = await readFitness(userId, async (transaction) => ({
-          ...(await context(userId, transaction)),
-          actual: await routineDetail(id, userId, transaction),
-        }));
-        requireProfileGoal(ctx);
-        assert(
-          ctx.workouts.length,
-          409,
-          'AI_CONTEXT_INCOMPLETE',
-          'Registrá al menos un entrenamiento antes de adaptar la rutina con IA.',
-        );
-        const data = env.ai.mock
-          ? mockRoutine(ctx.goal.id, true)
-          : parseJson(
-              await cohereChat(
-                [
-                  { role: 'system', content: systemPlan('una adaptación de rutina') },
-                  {
-                    role: 'user',
-                    content: JSON.stringify({ contexto: ctx, instrucciones: input.instrucciones }),
-                  },
-                ],
-                routineJsonSchema,
-              ),
-              routineSchema,
-              ctx.goal.id,
-            );
-        return saveAiRoutine(userId, routineSchema.parse(data), id, 'CU019_ADAPTAR_RUTINA_IA');
-      },
-    },
-  ).generarRutina();
+  ).modificarRutinaIA();
 
 export const generateDiet = (userId, input) =>
   new Dieta(
     {},
     {
-      generarConIA: () =>
+      generarDietaIA: () =>
+        new Dieta(
+          {},
+          {
+            generarConIA: () =>
+              new IAService(
+                {},
+                {
+                  generarDieta: async () => {
+                    const ctx = await readFitness(userId, (transaction) =>
+                      context(userId, transaction),
+                    );
+                    requireProfileGoal(ctx);
+                    const data = env.ai.mock
+                      ? mockDiet(ctx.goal.id)
+                      : await generateStructuredPlan(
+                          [
+                            { role: 'system', content: systemPlan('una dieta orientativa') },
+                            {
+                              role: 'user',
+                              content: JSON.stringify({
+                                contexto: ctx,
+                                preferencias: input.preferencias,
+                              }),
+                            },
+                          ],
+                          dietJsonSchema,
+                          dietSchema,
+                          ctx.goal.id,
+                          validateAiDiet,
+                        );
+                    return saveAiDiet(userId, validateAiDiet(data), null, 'CU023_GENERAR_DIETA_IA');
+                  },
+                },
+              ).generarDieta(),
+          },
+        ).generarConIA(),
+    },
+  ).generarDietaIA();
+
+export const adaptDiet = (userId, id, input) =>
+  new Dieta(
+    {},
+    {
+      modificarDietaIA: () =>
         new IAService(
           {},
           {
             generarDieta: async () => {
-              const ctx = await readFitness(userId, (transaction) => context(userId, transaction));
+              const ctx = await readFitness(userId, async (transaction) => ({
+                ...(await context(userId, transaction)),
+                actual: await dietDetail(id, userId, transaction),
+              }));
               requireProfileGoal(ctx);
+              assert(
+                ctx.workouts.length || ctx.measurements.length >= 2,
+                409,
+                'AI_CONTEXT_INCOMPLETE',
+                'Registrá progreso físico o actividad antes de adaptar la dieta con IA.',
+              );
               const data = env.ai.mock
-                ? mockDiet(ctx.goal.id)
-                : parseJson(
-                    await cohereChat(
-                      [
-                        { role: 'system', content: systemPlan('una dieta orientativa') },
-                        {
-                          role: 'user',
-                          content: JSON.stringify({
-                            contexto: ctx,
-                            preferencias: input.preferencias,
-                          }),
-                        },
-                      ],
-                      dietJsonSchema,
-                    ),
+                ? mockDiet(ctx.goal.id, true)
+                : await generateStructuredPlan(
+                    [
+                      {
+                        role: 'system',
+                        content: systemPlan('una adaptación de dieta orientativa'),
+                      },
+                      {
+                        role: 'user',
+                        content: JSON.stringify({
+                          contexto: ctx,
+                          instrucciones: input.instrucciones,
+                        }),
+                      },
+                    ],
+                    dietJsonSchema,
                     dietSchema,
                     ctx.goal.id,
+                    validateAiDiet,
                   );
-              return saveAiDiet(userId, dietSchema.parse(data), null, 'CU023_GENERAR_DIETA_IA');
+              return saveAiDiet(userId, validateAiDiet(data), id, 'CU026_ADAPTAR_DIETA_IA');
             },
           },
         ).generarDieta(),
     },
-  ).generarConIA();
-
-export const adaptDiet = (userId, id, input) =>
-  new IAService(
-    {},
-    {
-      generarDieta: async () => {
-        const ctx = await readFitness(userId, async (transaction) => ({
-          ...(await context(userId, transaction)),
-          actual: await dietDetail(id, userId, transaction),
-        }));
-        requireProfileGoal(ctx);
-        assert(
-          ctx.workouts.length || ctx.measurements.length >= 2,
-          409,
-          'AI_CONTEXT_INCOMPLETE',
-          'Registrá progreso físico o actividad antes de adaptar la dieta con IA.',
-        );
-        const data = env.ai.mock
-          ? mockDiet(ctx.goal.id, true)
-          : parseJson(
-              await cohereChat(
-                [
-                  { role: 'system', content: systemPlan('una adaptación de dieta orientativa') },
-                  {
-                    role: 'user',
-                    content: JSON.stringify({ contexto: ctx, instrucciones: input.instrucciones }),
-                  },
-                ],
-                dietJsonSchema,
-              ),
-              dietSchema,
-              ctx.goal.id,
-            );
-        return saveAiDiet(userId, dietSchema.parse(data), id, 'CU026_ADAPTAR_DIETA_IA');
-      },
-    },
-  ).generarDieta();
+  ).modificarDietaIA();
 
 export const listConversations = (userId) =>
   readFitness(userId, async (transaction) => ({
@@ -415,111 +527,162 @@ export const chat = (userId, input) =>
   new IAService(
     {},
     {
-      responderConsulta: async () => {
-        let previous = [];
-        if (input.conversacion_id) {
-          const conversation = await getConversation(userId, input.conversacion_id);
-          assert(
-            conversation.modo === input.modo,
-            400,
-            'CONVERSATION_MODE',
-            'El modo no coincide con la conversación.',
-          );
-          previous = conversation.mensajes
-            .slice(-10)
-            .map((m) => ({ role: m.rol, content: m.contenido }));
-        }
-        let answer;
-        try {
-          answer = env.ai.mock
-            ? {
-                relacionado: !/bitcoin|criptomoneda|pol[ií]tica/i.test(input.consulta),
-                respuesta:
-                  'Puedo ayudarte con entrenamiento, nutrición orientativa y el uso de GYM-OS.',
+      responderconsulta: () =>
+        new IAService(
+          {},
+          {
+            responderConsulta: async () => {
+              await ensureAiConsent(userId);
+              let previous = [];
+              if (input.conversacion_id) {
+                const conversation = await getConversation(userId, input.conversacion_id);
+                assert(
+                  conversation.modo === input.modo,
+                  400,
+                  'CONVERSATION_MODE',
+                  'El modo no coincide con la conversación.',
+                );
+                previous = conversation.mensajes
+                  .slice(-10)
+                  .map((m) => ({ role: m.rol, content: m.contenido }));
               }
-            : JSON.parse(
-                await cohereChat(
+              let answer;
+              try {
+                answer = env.ai.mock
+                  ? {
+                      relacionado: !/bitcoin|criptomoneda|pol[ií]tica/i.test(input.consulta),
+                      respuesta:
+                        'Puedo ayudarte con entrenamiento, nutrición orientativa y el uso de GYM-OS.',
+                    }
+                  : JSON.parse(
+                      await cohereChat(
+                        [
+                          {
+                            role: 'system',
+                            content: `Respondé en español como ${input.modo === 'soporte' ? 'soporte de GYM-OS' : 'entrenador físico general'}. Indicá relacionado=false si la consulta no trata sobre GYM-OS, ejercicio, hábitos o nutrición general. No des diagnósticos médicos.`,
+                          },
+                          ...previous,
+                          { role: 'user', content: input.consulta },
+                        ],
+                        chatJsonSchema,
+                      ),
+                    );
+              } catch (error) {
+                if (error instanceof AppError) throw error;
+                throw new AppError(
+                  503,
+                  'AI_INVALID_RESPONSE',
+                  'El asistente devolvió una respuesta inválida. Intentá nuevamente.',
+                );
+              }
+              assert(
+                typeof answer.respuesta === 'string' && answer.respuesta.trim(),
+                503,
+                'AI_INVALID_RESPONSE',
+                'El asistente devolvió una respuesta inválida.',
+              );
+              const responseText =
+                answer.relacionado === true
+                  ? answer.respuesta.trim()
+                  : 'Solo puedo ayudarte con GYM—OS, entrenamiento, hábitos y nutrición general.';
+              return writeFitness(userId, 'CU031_ASISTENTE_IA', 'ia', async (transaction) => {
+                const messageTime = Date.now();
+                let conversation;
+                if (input.conversacion_id) {
+                  conversation = await Conversations.findOne({
+                    where: { id: input.conversacion_id, usuario_id: userId },
+                    transaction,
+                  });
+                  assert(conversation, 404, 'NOT_FOUND', 'No se encontró la conversación.');
+                } else {
+                  conversation = await Conversations.create(
+                    {
+                      usuario_id: userId,
+                      modo: input.modo,
+                      titulo: input.consulta.slice(0, 100),
+                      fecha_creacion: new Date(),
+                    },
+                    { transaction },
+                  );
+                }
+                await Messages.bulkCreate(
                   [
                     {
-                      role: 'system',
-                      content: `Respondé en español como ${input.modo === 'soporte' ? 'soporte de GYM-OS' : 'entrenador físico general'}. Indicá relacionado=false si la consulta no trata sobre GYM-OS, ejercicio, hábitos o nutrición general. No des diagnósticos médicos.`,
+                      conversacion_id: conversation.id,
+                      rol: 'user',
+                      contenido: input.consulta,
+                      fecha_creacion: new Date(messageTime),
                     },
-                    ...previous,
-                    { role: 'user', content: input.consulta },
+                    {
+                      conversacion_id: conversation.id,
+                      rol: 'assistant',
+                      contenido: responseText,
+                      fecha_creacion: new Date(messageTime + 1),
+                    },
                   ],
-                  chatJsonSchema,
-                ),
-              );
-        } catch (error) {
-          if (error instanceof AppError) throw error;
-          throw new AppError(
-            503,
-            'AI_INVALID_RESPONSE',
-            'El asistente devolvió una respuesta inválida. Intentá nuevamente.',
-          );
-        }
-        assert(
-          answer?.relacionado === true,
-          400,
-          'AI_OUT_OF_SCOPE',
-          'El asistente solo responde sobre GYM-OS, entrenamiento, hábitos y nutrición general.',
-        );
-        assert(
-          typeof answer.respuesta === 'string' && answer.respuesta.trim(),
-          503,
-          'AI_INVALID_RESPONSE',
-          'El asistente devolvió una respuesta inválida.',
-        );
-        return writeFitness(userId, 'CU031_ASISTENTE_IA', 'ia', async (transaction) => {
-          let conversation;
-          if (input.conversacion_id) {
-            conversation = await Conversations.findOne({
-              where: { id: input.conversacion_id, usuario_id: userId },
-              transaction,
-            });
-            assert(conversation, 404, 'NOT_FOUND', 'No se encontró la conversación.');
-          } else {
-            conversation = await Conversations.create(
-              {
-                usuario_id: userId,
-                modo: input.modo,
-                titulo: input.consulta.slice(0, 100),
-                fecha_creacion: new Date(),
-              },
-              { transaction },
-            );
-          }
-          await Messages.bulkCreate(
-            [
-              {
-                conversacion_id: conversation.id,
-                rol: 'user',
-                contenido: input.consulta,
-                fecha_creacion: new Date(),
-              },
-              {
-                conversacion_id: conversation.id,
-                rol: 'assistant',
-                contenido: answer.respuesta.trim(),
-                fecha_creacion: new Date(),
-              },
-            ],
-            { transaction },
-          );
-          const mensajes = await Messages.findAll({
-            where: { conversacion_id: conversation.id },
-            order: [['fecha_creacion', 'ASC']],
-            transaction,
-          });
-          return { ...dto(conversation), mensajes: dto(mensajes) };
-        });
-      },
+                  { transaction },
+                );
+                const mensajes = await Messages.findAll({
+                  where: { conversacion_id: conversation.id },
+                  order: [['fecha_creacion', 'ASC']],
+                  transaction,
+                });
+                return { ...dto(conversation), mensajes: dto(mensajes) };
+              });
+            },
+          },
+        ).responderConsulta(),
     },
-  ).responderConsulta();
+  ).responderconsulta();
 
-export const aiStatus = () => ({
-  proveedor: env.ai.provider,
-  modelo: env.ai.model,
-  configurado: env.ai.mock || Boolean(env.ai.apiKey),
-  modo_prueba: env.ai.mock,
-});
+let healthCache;
+export async function aiStatus() {
+  if (env.ai.mock)
+    return {
+      proveedor: env.ai.provider,
+      modelo: env.ai.model,
+      configurado: true,
+      disponible: true,
+      modo_prueba: true,
+      verificado_en: new Date().toISOString(),
+    };
+  if (!env.ai.apiKey)
+    return {
+      proveedor: env.ai.provider,
+      modelo: env.ai.model,
+      configurado: false,
+      disponible: false,
+      modo_prueba: false,
+      verificado_en: null,
+    };
+  if (healthCache && Date.now() - healthCache.at < 5 * 60000) return healthCache.value;
+  let disponible = false;
+  try {
+    const value = JSON.parse(
+      await cohereChat(
+        [
+          { role: 'system', content: 'Respondé únicamente el JSON solicitado.' },
+          { role: 'user', content: 'Confirmá disponibilidad.' },
+        ],
+        {
+          type: 'object',
+          required: ['ok'],
+          properties: { ok: { type: 'boolean' } },
+        },
+      ),
+    );
+    disponible = value.ok === true;
+  } catch {
+    disponible = false;
+  }
+  const value = {
+    proveedor: env.ai.provider,
+    modelo: env.ai.model,
+    configurado: true,
+    disponible,
+    modo_prueba: false,
+    verificado_en: new Date().toISOString(),
+  };
+  healthCache = { at: Date.now(), value };
+  return value;
+}

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Bot, Dumbbell, Send, Sparkles, Utensils } from 'lucide-react';
-import { api, useAction, useResource } from '../lib';
+import { api, useAction, useAuth, useResource } from '../lib';
 import {
   Badge,
   Button,
@@ -13,7 +13,7 @@ import {
   Textarea,
 } from '../components/ui';
 
-function PlanTool({ kind, icon: Icon, title, items, onChanged }) {
+function PlanTool({ kind, icon: Icon, title, items, onChanged, enabled }) {
   const singular = kind === 'routines' ? 'rutina' : 'dieta';
   const [selected, setSelected] = useState('');
   const [instructions, setInstructions] = useState('');
@@ -79,7 +79,7 @@ function PlanTool({ kind, icon: Icon, title, items, onChanged }) {
       )}
       <Button
         busy={action.busy}
-        disabled={selected && instructions.trim().length < 2}
+        disabled={!enabled || (selected && instructions.trim().length < 2)}
         onClick={() => (selected ? setConfirm(true) : execute())}
       >
         <Sparkles size={17} />
@@ -102,7 +102,7 @@ function PlanTool({ kind, icon: Icon, title, items, onChanged }) {
   );
 }
 
-function Chat() {
+function Chat({ enabled }) {
   const conversations = useResource('/ai/conversations');
   const [conversation, setConversation] = useState(null);
   const [mode, setMode] = useState('entrenador');
@@ -190,7 +190,7 @@ function Chat() {
             <Select
               label="Modo"
               value={mode}
-              disabled={Boolean(conversation)}
+              disabled={!enabled || Boolean(conversation)}
               onChange={(e) => setMode(e.target.value)}
             >
               <option value="entrenador">Entrenador</option>
@@ -202,10 +202,11 @@ function Chat() {
               minLength={1}
               maxLength={2000}
               value={question}
+              disabled={!enabled}
               onChange={(e) => setQuestion(e.target.value)}
             />
             <Feedback {...action} />
-            <Button type="submit" busy={action.busy} disabled={!question.trim()}>
+            <Button type="submit" busy={action.busy} disabled={!enabled || !question.trim()}>
               <Send size={17} />
               Enviar
             </Button>
@@ -217,9 +218,11 @@ function Chat() {
 }
 
 export default function Assistant() {
+  const { user } = useAuth();
   const status = useResource('/ai/status');
   const routines = useResource('/routines');
   const diets = useResource('/diets');
+  const enabled = Boolean(user.consentimiento_ia && status.data?.disponible);
   return (
     <>
       <PageTitle
@@ -228,20 +231,27 @@ export default function Assistant() {
         description="Generá planes, adaptalos según tu progreso y resolvé consultas dentro de GYM—OS."
       >
         {status.data && (
-          <Badge tone={status.data.configurado ? 'green' : ''}>
-            {status.data.configurado ? 'DISPONIBLE' : 'SIN CONFIGURAR'}
+          <Badge tone={status.data.disponible ? 'green' : ''}>
+            {status.data.disponible ? 'DISPONIBLE' : 'NO DISPONIBLE'}
           </Badge>
         )}
       </PageTitle>
       <Resource resource={status}>
         {(state) =>
-          !state.configurado && (
+          !state.disponible && (
             <div className="notice error">
-              El servicio de IA no está configurado. Las funciones manuales siguen disponibles.
+              El servicio de IA no está disponible en este momento. Las funciones manuales siguen
+              disponibles.
             </div>
           )
         }
       </Resource>
+      {!user.consentimiento_ia && (
+        <div className="notice" role="status">
+          Para usar la IA, primero leé y activá el consentimiento en <Link to="/me">tu perfil</Link>
+          . Las funciones manuales no comparten datos con Cohere.
+        </div>
+      )}
       <div className="ai-tools">
         <Resource resource={routines}>
           {(data) => (
@@ -251,6 +261,7 @@ export default function Assistant() {
               title="Rutinas a tu medida"
               items={data.items}
               onChanged={routines.reload}
+              enabled={enabled}
             />
           )}
         </Resource>
@@ -262,11 +273,12 @@ export default function Assistant() {
               title="Planes alimentarios"
               items={data.items}
               onChanged={diets.reload}
+              enabled={enabled}
             />
           )}
         </Resource>
       </div>
-      <Chat />
+      <Chat enabled={enabled} />
       <p className="small muted ai-disclaimer">
         La IA brinda orientación general. No reemplaza una evaluación médica, nutricional ni
         profesional.

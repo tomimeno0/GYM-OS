@@ -15,6 +15,7 @@ export default function Account() {
         'fecha_nacimiento',
         'genero',
         'zona_horaria',
+        'consentimiento_ia',
       ]),
       telefono: user.telefono || '',
       fecha_nacimiento: user.fecha_nacimiento || '',
@@ -120,6 +121,21 @@ export default function Account() {
               readOnly
               hint="El correo identifica tu cuenta y no se modifica desde el perfil."
             />
+            <label className="consent-card">
+              <input
+                type="checkbox"
+                checked={Boolean(f.consentimiento_ia)}
+                onChange={(e) => setF({ ...f, consentimiento_ia: e.target.checked })}
+              />
+              <span>
+                <strong>Permitir el uso de mis datos para funciones de IA</strong>
+                <small>
+                  Al activarlo, GYM—OS puede enviar tu perfil físico, objetivos e historial
+                  necesario a Cohere para generar planes y responder consultas. Podés revocarlo en
+                  cualquier momento.
+                </small>
+              </span>
+            </label>
             <Feedback {...a} />
             <div className="form-actions">
               <Button busy={a.busy}>

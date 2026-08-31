@@ -29,6 +29,7 @@ export function publicUser(user) {
     genero: u.genero,
     zona_horaria: u.zona_horaria,
     fecha_registro: u.fecha_registro,
+    consentimiento_ia: Boolean(u.consentimiento_ia),
     roles: (u.roles || []).map((r) => ({ id: r.id, nombre: r.nombre, sistema: r.sistema })),
     permisos: [...new Set((u.roles || []).flatMap((r) => r.permisos))],
   };

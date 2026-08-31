@@ -108,6 +108,15 @@ export class Rutina extends UmlEntity {
   generarConIA(...args) {
     return this.execute('generarConIA', args);
   }
+  generarRutinaIA(...args) {
+    return this.execute('generarRutinaIA', args);
+  }
+  modificarRutinaIA(...args) {
+    return this.execute('modificarRutinaIA', args);
+  }
+  eliminarRutina(...args) {
+    return this.execute('eliminarRutina', args);
+  }
 }
 
 export class RutinaEjercicio extends UmlEntity {
@@ -125,6 +134,15 @@ export class Dieta extends UmlEntity {
   }
   generarConIA(...args) {
     return this.execute('generarConIA', args);
+  }
+  generarDietaIA(...args) {
+    return this.execute('generarDietaIA', args);
+  }
+  modificarDietaIA(...args) {
+    return this.execute('modificarDietaIA', args);
+  }
+  eliminarDieta(...args) {
+    return this.execute('eliminarDieta', args);
   }
 }
 
@@ -153,6 +171,9 @@ export class IAService extends UmlEntity {
   responderConsulta(...args) {
     return this.execute('responderConsulta', args);
   }
+  responderconsulta(...args) {
+    return this.execute('responderconsulta', args);
+  }
 }
 
 export class Progreso extends UmlEntity {
@@ -170,6 +191,9 @@ export class Seguridad extends UmlEntity {
   }
   digitoVerificador(...args) {
     return this.execute('digitoVerificador', args);
+  }
+  digitoVerificado(...args) {
+    return this.execute('digitoVerificado', args);
   }
 }
 
@@ -201,4 +225,12 @@ export const UML_METHODS = Object.freeze({
   IAService: ['generarRutina', 'generarDieta', 'responderConsulta'],
   Progreso: ['calcularPorcentaje'],
   Seguridad: ['encriptarRreversible', 'encriptarIrreversible', 'digitoVerificador'],
+});
+
+// Nombres literales de mensajes que aparecen en las secuencias y difieren del UML de clases.
+export const SEQUENCE_METHODS = Object.freeze({
+  Rutina: ['generarRutinaIA', 'modificarRutinaIA', 'eliminarRutina'],
+  Dieta: ['generarDietaIA', 'modificarDietaIA', 'eliminarDieta'],
+  IAService: ['responderconsulta'],
+  Seguridad: ['digitoVerificado'],
 });

@@ -65,4 +65,10 @@ function signatureImpl(value) {
     .digest('hex');
 }
 export const signature = (...args) =>
-  new Seguridad({}, { digitoVerificador: () => signatureImpl(...args) }).digitoVerificador();
+  new Seguridad(
+    {},
+    {
+      digitoVerificado: () =>
+        new Seguridad({}, { digitoVerificador: () => signatureImpl(...args) }).digitoVerificador(),
+    },
+  ).digitoVerificado();

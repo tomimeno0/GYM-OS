@@ -1,0 +1,26 @@
+name: gym-os
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Run npm run setup}
+      MYSQL_DATABASE: gym_os
+      MYSQL_USER: ${DB_USER:-gymos}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Run npm run setup}
+    ports: ["127.0.0.1:3307:3306"]
+    volumes: ["mysql-data:/var/lib/mysql", "./scripts/mysql-init.sql:/docker-entrypoint-initdb.d/10-test-db.sql:ro"]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["ai"]
+    restart: unless-stopped
+    ports: ["127.0.0.1:11435:11434"]
+    volumes: ["ollama-data:/root/.ollama"]
+volumes:
+  mysql-data:
+  ollama-data:

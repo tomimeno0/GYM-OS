@@ -1,0 +1,52 @@
+import { DataTypes as D } from 'sequelize';
+const str = (n, required = false) => ({ type: D.STRING(n), allowNull: !required });
+const dec = (p = 8, s = 2) => ({ type: D.DECIMAL(p, s), allowNull: true });
+const date = (required = false) => ({ type: D.DATE(3), allowNull: !required });
+const day = (required = false) => ({ type: D.DATEONLY, allowNull: !required });
+const ref = (table, nullable = false) => ({ type: D.UUID, allowNull: nullable, references: { model: table, key: 'id' }, onDelete: 'RESTRICT', onUpdate: 'CASCADE' });
+const state = (values, initial) => ({ type: D.ENUM(...values), allowNull: false, defaultValue: initial });
+const integer = (value = 0) => ({ type: D.INTEGER, allowNull: false, defaultValue: value });
+const json = () => ({ type: D.JSON, allowNull: false, defaultValue: [] });
+const base = () => ({ id: { type: D.UUID, primaryKey: true, allowNull: false, defaultValue: D.UUIDV4 }, dvh: { ...str(64, true), defaultValue: '' } });
+const table = attributes => ({ ...base(), ...attributes });
+
+// Initial schema: extend through a NEW migration when changing an existing database.
+export const schema = {
+  usuarios: table({
+    nombre: str(100, true), apellido: str(100), email: { ...str(150, true), unique: true }, password_hash: str(255, true),
+    telefono_cifrado: str(255), fecha_nacimiento: day(), genero: state(['masculino', 'femenino', 'otro'], 'otro'),
+    estado: state(['activo', 'bloqueado', 'eliminado'], 'activo'), fecha_registro: date(true), ultima_conexion: date(),
+    zona_horaria: { ...str(80, true), defaultValue: 'America/Argentina/Buenos_Aires' }, consentimiento_ia: { type: D.BOOLEAN, allowNull: false, defaultValue: false },
+  }),
+  roles: table({ nombre: { ...str(50, true), unique: true }, descripcion: str(255), fecha_creacion: date(true), permisos: json(), sistema: { type: D.BOOLEAN, allowNull: false, defaultValue: false } }),
+  usuario_roles: table({ usuario_id: ref('usuarios'), rol_id: ref('roles'), fecha_asignacion: date(true) }),
+  mediciones_fisicas: table({
+    usuario_id: ref('usuarios'), peso_kg: { ...dec(5), allowNull: false }, altura_cm: dec(5), grasa_corporal: dec(5), musculo_corporal: dec(5),
+    nivel_actividad: str(50), fecha_medicion: date(true), cintura_cm: dec(5), pecho_cm: dec(5), brazos_cm: dec(5), piernas_cm: dec(5),
+  }),
+  objetivos: table({
+    usuario_id: ref('usuarios'), medicion_inicio_id: ref('mediciones_fisicas', true), nombre: str(100, true), descripcion: { type: D.TEXT },
+    tipo: state(['bajar_peso', 'ganar_masa_muscular', 'mejorar_resistencia', 'aumentar_frecuencia_entrenamiento', 'definir', 'mantener_peso'], 'mantener_peso'),
+    valor_objetivo: dec(), unidad: str(30), actividad_objetivo: str(50), frecuencia_semanal: integer(3), peso_inicial: dec(),
+    estado: state(['activo', 'completado', 'eliminado'], 'activo'), fecha_inicio: day(true), fecha_fin_estimada: day(), fecha_completado: day(),
+    usuario_activo: { ...str(36), unique: true },
+  }),
+  rutinas: table({ usuario_id: ref('usuarios'), objetivo_id: ref('objetivos', true), nombre: str(100, true), descripcion: { type: D.TEXT }, tipo_generacion: state(['manual', 'ia'], 'manual'), estado: state(['activa', 'eliminada', 'finalizada'], 'activa'), fecha_creacion: date(true), fecha_actualizacion: date() }),
+  rutina_ejercicios: table({ rutina_id: ref('rutinas'), ejercicio_id: str(40), nombre_ejercicio: str(150, true), grupo_muscular: str(100), dia_semana: str(20), orden: integer(), series: integer(3), repeticiones: integer(10), peso_sugerido_kg: dec(6), descanso_segundos: integer(90), observaciones: { type: D.TEXT } }),
+  entrenamientos: table({ usuario_id: ref('usuarios'), rutina_id: ref('rutinas'), fecha: day(true), fecha_inicio: date(true), fecha_fin: date(), dia_semana: str(20), estado: state(['iniciado', 'completado', 'incompleto', 'cancelado'], 'iniciado'), observaciones: { type: D.TEXT }, usuario_en_curso: { ...str(36), unique: true } }),
+  entrenamiento_ejercicios: table({ entrenamiento_id: ref('entrenamientos'), nombre_ejercicio: str(150, true), ejercicio_id: str(40), orden: integer(), series: integer(), repeticiones: integer(), peso_utilizado_kg: dec(6), realizado: { type: D.BOOLEAN, defaultValue: false, allowNull: false }, observaciones: { type: D.TEXT } }),
+  dietas: table({ usuario_id: ref('usuarios'), objetivo_id: ref('objetivos', true), nombre: str(100, true), descripcion: { type: D.TEXT }, tipo_generacion: state(['manual', 'ia'], 'manual'), calorias_objetivo: integer(), proteinas_objetivo_g: dec(6), carbohidratos_objetivo_g: dec(6), grasas_objetivo_g: dec(6), estado: state(['activa', 'eliminada', 'finalizada'], 'activa'), fecha_creacion: date(true), fecha_actualizacion: date() }),
+  dieta_comidas: table({ dieta_id: ref('dietas'), nombre_comida: str(150, true), tipo_comida: str(50), hora: str(5), cantidad: dec(6), unidad: str(30), calorias: integer(), proteinas_g: dec(6), carbohidratos_g: dec(6), grasas_g: dec(6), alimentos: json(), observaciones: { type: D.TEXT } }),
+  comidas_consumidas: table({ usuario_id: ref('usuarios'), nombre_comida: str(150, true), tipo_comida: str(50), fecha_consumo: date(true), cantidad_consumida: dec(6), unidad: str(30), calorias_totales: integer(), proteinas_totales_g: dec(6), carbohidratos_totales_g: dec(6), grasas_totales_g: dec(6), alimentos: json() }),
+  sesiones: table({ usuario_id: ref('usuarios'), token_hash: { ...str(64, true), unique: true }, fecha_creacion: date(true), fecha_expiracion: date(true) }),
+  recuperaciones: table({ usuario_id: ref('usuarios'), token_hash: { ...str(64, true), unique: true }, fecha_creacion: date(true), fecha_expiracion: date(true), usado: { type: D.BOOLEAN, defaultValue: false, allowNull: false } }),
+  conversaciones: table({ usuario_id: ref('usuarios'), modo: state(['entrenador', 'soporte'], 'entrenador'), titulo: str(100), fecha_creacion: date(true) }),
+  mensajes: table({ conversacion_id: ref('conversaciones'), rol: state(['user', 'assistant'], 'user'), contenido: { type: D.TEXT, allowNull: false }, fecha_creacion: date(true) }),
+  bitacora: table({ usuario_id: ref('usuarios', true), accion: str(100, true), modulo: str(100, true), descripcion: { type: D.TEXT }, fecha_hora: date(true), resultado: state(['exitoso', 'fallido', 'advertencia'], 'exitoso') }),
+};
+export const indexes = {
+  usuario_roles: [{ fields: ['usuario_id', 'rol_id'], unique: true }],
+  mediciones_fisicas: [{ fields: ['usuario_id', 'fecha_medicion'] }],
+  objetivos: [{ fields: ['usuario_id', 'estado'] }], rutinas: [{ fields: ['usuario_id', 'estado'] }], dietas: [{ fields: ['usuario_id', 'estado'] }],
+  entrenamientos: [{ fields: ['usuario_id', 'fecha'] }], comidas_consumidas: [{ fields: ['usuario_id', 'fecha_consumo'] }], bitacora: [{ fields: ['fecha_hora'] }],
+};

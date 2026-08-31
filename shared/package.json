@@ -1,0 +1,13 @@
+{
+  "name": "@gym-os/shared",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./schemas": "./schemas.js",
+    "./constants": "./constants.js"
+  },
+  "dependencies": {
+    "zod": "4.5.4"
+  }
+}

@@ -9,14 +9,20 @@ import {
 } from 'node:crypto';
 import { promisify } from 'node:util';
 import { env } from '../config/env.js';
+import { Seguridad } from '../domain/uml.js';
 const scrypt = promisify(scryptCallback);
 const options = { N: 32768, r: 8, p: 1, maxmem: 64 * 1024 * 1024 };
 
-export async function hashPassword(password) {
+async function hashPasswordImpl(password) {
   const salt = randomBytes(16).toString('hex');
   const hash = await scrypt(password, salt, 64, options);
   return `scrypt$32768$8$1$${salt}$${hash.toString('hex')}`;
 }
+export const hashPassword = (...args) =>
+  new Seguridad(
+    {},
+    { encriptarIrreversible: () => hashPasswordImpl(...args) },
+  ).encriptarIrreversible();
 export async function verifyPassword(password, encoded) {
   const parts = String(encoded).split('$');
   if (parts.length !== 6 || parts[0] !== 'scrypt') return false;
@@ -26,13 +32,15 @@ export async function verifyPassword(password, encoded) {
 }
 export const newToken = () => randomBytes(32).toString('base64url');
 export const hashToken = (value) => createHash('sha256').update(value).digest('hex');
-export function encrypt(value) {
+function encryptImpl(value) {
   if (!value) return null;
   const iv = randomBytes(12),
     cipher = createCipheriv('aes-256-gcm', env.encryptionKey, iv);
   const encrypted = Buffer.concat([cipher.update(value, 'utf8'), cipher.final()]);
   return [iv, cipher.getAuthTag(), encrypted].map((v) => v.toString('base64url')).join('.');
 }
+export const encrypt = (...args) =>
+  new Seguridad({}, { encriptarRreversible: () => encryptImpl(...args) }).encriptarRreversible();
 export function decrypt(value) {
   if (!value) return '';
   const [iv, tag, data] = value.split('.').map((v) => Buffer.from(v, 'base64url'));
@@ -51,8 +59,10 @@ function normalize(value) {
     );
   return value;
 }
-export function signature(value) {
+function signatureImpl(value) {
   return createHmac('sha256', env.integrityKey)
     .update(JSON.stringify(normalize(value)))
     .digest('hex');
 }
+export const signature = (...args) =>
+  new Seguridad({}, { digitoVerificador: () => signatureImpl(...args) }).digitoVerificador();

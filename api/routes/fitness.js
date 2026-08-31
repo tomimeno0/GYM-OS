@@ -10,6 +10,9 @@ import {
   startWorkoutSchema,
   workoutSchema,
   paginationSchema,
+  aiGenerateSchema,
+  aiAdaptSchema,
+  aiChatSchema,
   uuid,
 } from '@gym-os/shared/schemas';
 import { requireAuth, permit } from '../middleware/auth.js';
@@ -17,6 +20,7 @@ import * as fitness from '../services/fitness.js';
 import * as routines from '../services/routines.js';
 import * as workouts from '../services/workouts.js';
 import * as nutrition from '../services/nutrition.js';
+import * as ai from '../services/ai.js';
 import { searchExercises, getExercise } from '../services/catalog.js';
 import { searchFoods } from '../services/foods.js';
 import { readFitness, dto } from '../lib/domain.js';
@@ -153,6 +157,37 @@ const foodLimiter = rateLimit({
     error: { code: 'RATE_LIMIT', message: 'Esperá un minuto antes de volver a buscar alimentos.' },
   },
 });
+const aiLimiter = rateLimit({
+  windowMs: 60000,
+  limit: 12,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  message: {
+    error: { code: 'RATE_LIMIT', message: 'Esperá un minuto antes de volver a usar la IA.' },
+  },
+});
+fitnessRouter.get('/ai/status', (req, res) => res.json(ai.aiStatus()));
+fitnessRouter.post('/ai/routines/generate', aiLimiter, async (req, res) =>
+  res.status(201).json(await ai.generateRoutine(req.user.id, aiGenerateSchema.parse(req.body))),
+);
+fitnessRouter.post('/ai/routines/:id/adapt', aiLimiter, async (req, res) =>
+  res.json(await ai.adaptRoutine(req.user.id, id(req), aiAdaptSchema.parse(req.body))),
+);
+fitnessRouter.post('/ai/diets/generate', aiLimiter, async (req, res) =>
+  res.status(201).json(await ai.generateDiet(req.user.id, aiGenerateSchema.parse(req.body))),
+);
+fitnessRouter.post('/ai/diets/:id/adapt', aiLimiter, async (req, res) =>
+  res.json(await ai.adaptDiet(req.user.id, id(req), aiAdaptSchema.parse(req.body))),
+);
+fitnessRouter.get('/ai/conversations', async (req, res) =>
+  res.json(await ai.listConversations(req.user.id)),
+);
+fitnessRouter.get('/ai/conversations/:id', async (req, res) =>
+  res.json(await ai.getConversation(req.user.id, id(req))),
+);
+fitnessRouter.post('/ai/chat', aiLimiter, async (req, res) =>
+  res.json(await ai.chat(req.user.id, aiChatSchema.parse(req.body))),
+);
 fitnessRouter.get('/foods', foodLimiter, async (req, res) => {
   const q = z
     .object({

@@ -197,6 +197,9 @@ export function RoutineList() {
         title="Tu plan. Tu ritmo."
         description="Organizá tus días y encontrá el próximo paso."
       >
+        <Link className="btn secondary" to="/asistente">
+          Generar con IA
+        </Link>
         <Link className="btn" to="/rutinas/nueva">
           <Plus size={17} />
           Crear rutina
@@ -210,7 +213,7 @@ export function RoutineList() {
                 <article className="card plan-card" key={v.id}>
                   <div className="section-title">
                     <span className="ordinal">{String(i + 1).padStart(2, '0')}</span>
-                    <Badge tone="green">MANUAL</Badge>
+                    <Badge tone="green">{v.tipo_generacion === 'ia' ? 'IA' : 'MANUAL'}</Badge>
                   </div>
                   <h2>{v.nombre}</h2>
                   <p className="muted">{v.descripcion || 'Tu plan de entrenamiento personal.'}</p>

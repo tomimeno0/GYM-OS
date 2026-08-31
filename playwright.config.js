@@ -18,7 +18,7 @@ export default defineConfig({
   ],
   webServer: {
     command:
-      'NODE_ENV=test DB_NAME=gym_os_test PORT=3100 APP_ORIGIN=http://127.0.0.1:3100 node api/index.js',
+      'NODE_ENV=test DB_NAME=gym_os_test AI_MOCK=true PORT=3100 APP_ORIGIN=http://127.0.0.1:3100 node api/index.js',
     url: 'http://127.0.0.1:3100/api/health',
     reuseExistingServer: false,
     timeout: 30000,

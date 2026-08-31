@@ -2,9 +2,9 @@
 
 Entrenamiento, nutrición y progreso en un solo lugar. Aplicación en **JavaScript, React, Express, Sequelize y MySQL**, con interfaz adaptable a escritorio y móvil.
 
-Implementa cuentas, perfil físico e historial, objetivos, rutinas por día, registro de entrenamientos, planes alimentarios, consumo y macros, biblioteca de 1.324 ejercicios y administración de usuarios, roles, bitácora e integridad.
+Implementa los 39 casos de uso: cuentas, perfil físico e historial, objetivos, rutinas por día, registro de entrenamientos, planes alimentarios, consumo y macros, asistente por IA, biblioteca de 1.324 ejercicios y administración de usuarios, roles, bitácora e integridad.
 
-**La IA está diferida por decisión del responsable del proyecto.** No hay proveedor configurado, llamadas a LLM, modelos locales ni generación automática. Los cinco casos de uso de IA se conservan documentados para una etapa posterior.
+La IA usa Cohere por API: no descarga ni ejecuta modelos locales. Configurá `COHERE_API_KEY` únicamente en `.env`; ese archivo está ignorado por Git y nunca debe publicarse.
 
 Estado verificable de la entrega: [Estado de entrega](docs/ESTADO.md). El código fuente y su historial están publicados en este repositorio público.
 

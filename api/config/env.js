@@ -28,6 +28,12 @@ export const env = {
   },
   encryptionKey: hexKey('ENCRYPTION_KEY'),
   integrityKey: hexKey('INTEGRITY_KEY'),
+  ai: {
+    provider: process.env.AI_PROVIDER || 'cohere',
+    apiKey: process.env.COHERE_API_KEY || '',
+    model: process.env.COHERE_MODEL || 'command-a-plus-05-2026',
+    mock: process.env.AI_MOCK === 'true',
+  },
 };
 if (env.nodeEnv === 'production' && !env.origin.startsWith('https://'))
   throw new Error('Producción requiere APP_ORIGIN con HTTPS.');

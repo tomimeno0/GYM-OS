@@ -13,10 +13,11 @@ import {
 } from '../lib/domain.js';
 import { assert } from '../lib/errors.js';
 import { validateGoalLink } from './fitness.js';
+import { Comida, Dieta } from '../domain/uml.js';
 
 const { dietas: Diets, dieta_comidas: Meals, comidas_consumidas: Consumed } = models;
 // Values are PER 100 g/ml or PER ONE portion; quantities are never summed across incompatible units.
-export function calculateMacros(foods) {
+function calculateMacrosImpl(foods) {
   const total = { calorias: 0, proteinas_g: 0, carbohidratos_g: 0, grasas_g: 0 };
   for (const food of foods) {
     const factor = food.cantidad / (food.unidad === 'porcion' ? 1 : 100);
@@ -35,6 +36,8 @@ export function calculateMacros(foods) {
   }
   return total;
 }
+export const calculateMacros = (...args) =>
+  new Comida({}, { calcularMacros: () => calculateMacrosImpl(...args) }).calcularMacros();
 export async function dietDetail(id, userId, transaction) {
   const diet = await owned(Diets, id, userId, transaction, {
     where: { estado: { [Op.ne]: 'eliminada' } },
@@ -65,15 +68,22 @@ export const listDiets = (userId) =>
     for (const d of diets) items.push(await dietDetail(d.id, userId, transaction));
     return { items };
   });
-async function persistDiet(userId, data, id, transaction) {
+export async function persistDiet(userId, data, id, transaction, generation = 'manual') {
   await validateGoalLink(data.objetivo_id, userId, transaction);
   const { comidas, ...fields } = data;
-  const prepared = comidas.map((meal) => ({
-    ...meal,
-    ...calculateMacros(meal.alimentos),
-    cantidad: 1,
-    unidad: 'comida',
-  }));
+  const prepared = comidas.map((meal) =>
+    new Comida(
+      {},
+      {
+        actualizarComida: () => ({
+          ...meal,
+          ...calculateMacros(meal.alimentos),
+          cantidad: 1,
+          unidad: 'comida',
+        }),
+      },
+    ).actualizarComida(),
+  );
   let diet;
   if (id) {
     diet = await owned(Diets, id, userId, transaction);
@@ -81,6 +91,7 @@ async function persistDiet(userId, data, id, transaction) {
     await diet.update(
       {
         ...fields,
+        tipo_generacion: generation,
         fecha_actualizacion: new Date(),
       },
       { transaction },
@@ -91,7 +102,7 @@ async function persistDiet(userId, data, id, transaction) {
       {
         ...fields,
         usuario_id: userId,
-        tipo_generacion: 'manual',
+        tipo_generacion: generation,
         fecha_creacion: new Date(),
         fecha_actualizacion: new Date(),
       },
@@ -103,12 +114,18 @@ async function persistDiet(userId, data, id, transaction) {
   );
   return dietDetail(diet.id, userId, transaction);
 }
-export const saveDiet = (userId, data, id) =>
+const saveDietImpl = (userId, data, id) =>
   writeFitness(
     userId,
     id ? 'CU027_MODIFICAR_DIETA' : 'CU024_CREAR_DIETA',
     'nutricion',
     (transaction) => persistDiet(userId, data, id, transaction),
+  );
+export const saveDiet = (...args) =>
+  new Dieta({}, { actualizarDieta: () => saveDietImpl(...args) }).actualizarDieta();
+export const saveAiDiet = (userId, data, id, action) =>
+  writeFitness(userId, action, 'ia', (transaction) =>
+    persistDiet(userId, data, id, transaction, 'ia'),
   );
 export const removeDiet = (userId, id) =>
   writeFitness(userId, 'CU028_ELIMINAR_DIETA', 'nutricion', async (transaction) => {

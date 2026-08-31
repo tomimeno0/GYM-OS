@@ -4,6 +4,7 @@ import { atomic, verified, audit } from './integrity.js';
 import { hashPassword, verifyPassword, encrypt, decrypt, newToken, hashToken } from './security.js';
 import { sendRecovery } from './mail.js';
 import { assert } from '../lib/errors.js';
+import { Cliente, Usuario } from '../domain/uml.js';
 
 const {
   usuarios: Users,
@@ -75,7 +76,7 @@ export async function register(data) {
     return { user: publicUser(await loadUser(user.id, transaction)), token };
   });
 }
-export async function login({ email, password }) {
+async function loginImpl({ email, password }) {
   const existing = await Users.findOne({ where: { email } });
   // Equal-cost hashing for unknown emails, without logging or returning supplied credentials.
   const valid = existing
@@ -112,6 +113,8 @@ export async function login({ email, password }) {
   );
   return result;
 }
+export const login = (...args) =>
+  new Usuario({}, { iniciarSesion: () => loginImpl(...args) }).iniciarSesion();
 export async function authenticate(token) {
   assert(
     token && /^[A-Za-z0-9_-]{43}$/.test(token),
@@ -133,7 +136,7 @@ export async function authenticate(token) {
     ['usuarios', 'roles', 'usuario_roles', 'sesiones'],
   );
 }
-export async function logout(userId, token) {
+async function logoutImpl(userId, token) {
   return atomic(async (transaction) => {
     await Sessions.destroy({
       where: { usuario_id: userId, token_hash: hashToken(token) },
@@ -142,7 +145,9 @@ export async function logout(userId, token) {
     await audit(transaction, userId, 'CU003_LOGOUT', 'cuentas');
   });
 }
-export async function updateProfile(userId, changes) {
+export const logout = (...args) =>
+  new Usuario({}, { cerrarSesion: () => logoutImpl(...args) }).cerrarSesion();
+async function updateProfileImpl(userId, changes) {
   return atomic(async (transaction) => {
     const user = await loadUser(userId, transaction);
     assert(user?.estado === 'activo', 401, 'ACCOUNT_DISABLED', 'La cuenta no está habilitada.');
@@ -153,7 +158,9 @@ export async function updateProfile(userId, changes) {
     return publicUser(user);
   });
 }
-export async function requestRecovery(email) {
+export const updateProfile = (...args) =>
+  new Cliente({}, { actualizarDatos: () => updateProfileImpl(...args) }).actualizarDatos();
+async function requestRecoveryImpl(email) {
   const token = newToken();
   const user = await atomic(async (transaction) => {
     const user = await Users.findOne({ where: { email, estado: 'activo' }, transaction });
@@ -195,7 +202,9 @@ export async function requestRecovery(email) {
       'Si el correo corresponde a una cuenta habilitada, recibirás un enlace de recuperación.',
   };
 }
-export async function resetPassword(token, password) {
+export const requestRecovery = (...args) =>
+  new Usuario({}, { recuperarPassword: () => requestRecoveryImpl(...args) }).recuperarPassword();
+async function resetPasswordImpl(token, password) {
   const password_hash = await hashPassword(password);
   return atomic(async (transaction) => {
     const reset = await Resets.findOne({
@@ -221,6 +230,8 @@ export async function resetPassword(token, password) {
     return { message: 'Contraseña actualizada. Iniciá sesión con tu nueva contraseña.' };
   });
 }
+export const resetPassword = (...args) =>
+  new Usuario({}, { recuperarPassword: () => resetPasswordImpl(...args) }).recuperarPassword();
 export async function assertAdminRemains(userId, transaction) {
   const admins = await Users.findAll({
     where: { estado: 'activo' },

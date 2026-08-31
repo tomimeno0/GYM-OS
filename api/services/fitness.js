@@ -12,6 +12,7 @@ import {
   round,
 } from '../lib/domain.js';
 import { assert } from '../lib/errors.js';
+import { Cliente, MedicionCorporal, Objetivo, PerfilFisico, Progreso } from '../domain/uml.js';
 
 const { mediciones_fisicas: Measurements, objetivos: Goals, entrenamientos: Workouts } = models;
 export async function latestMeasurement(userId, transaction, before) {
@@ -47,7 +48,25 @@ export const listMeasurements = (userId, { page = 1, limit = 25 } = {}) =>
     });
     return { total: count, items: dto(rows) };
   });
-export const addMeasurement = (userId, data, initial) =>
+const updatePhysicalFields = (data) => {
+  const operations = {
+    cambiarPeso: () => data.peso_kg,
+    cambiarAltura: () => data.altura_cm,
+    cambiarPorcMusculo: () => data.musculo_corporal,
+    cambiarPorcGraso: () => data.grasa_corporal,
+    cambiarNivelActividad: () => data.nivel_actividad,
+  };
+  const profile = new PerfilFisico({}, operations);
+  return {
+    ...data,
+    peso_kg: profile.cambiarPeso(),
+    altura_cm: profile.cambiarAltura(),
+    musculo_corporal: profile.cambiarPorcMusculo(),
+    grasa_corporal: profile.cambiarPorcGraso(),
+    nivel_actividad: profile.cambiarNivelActividad(),
+  };
+};
+const addMeasurementImpl = (userId, data, initial) =>
   writeFitness(
     userId,
     initial ? 'CU007_DATOS_FISICOS' : 'CU008_DATOS_FISICOS',
@@ -70,10 +89,18 @@ export const addMeasurement = (userId, data, initial) =>
         'MEASUREMENT_ORDER',
         'La actualización debe ser posterior a la última medición.',
       );
-      return Measurements.create({ ...data, fecha_medicion, usuario_id: userId }, { transaction });
+      return Measurements.create(
+        { ...updatePhysicalFields(data), fecha_medicion, usuario_id: userId },
+        { transaction },
+      );
     },
   );
-export const listGoals = (userId) =>
+export const addMeasurement = (...args) =>
+  new MedicionCorporal(
+    {},
+    { actualizarMedicion: () => addMeasurementImpl(...args) },
+  ).actualizarMedicion();
+const listGoalsImpl = (userId) =>
   readFitness(userId, async (transaction) => ({
     items: dto(
       await Goals.findAll({
@@ -83,6 +110,8 @@ export const listGoals = (userId) =>
       }),
     ),
   }));
+export const listGoals = (...args) =>
+  new Objetivo({}, { visuaizarObjetivo: () => listGoalsImpl(...args) }).visuaizarObjetivo();
 function validateGoalValues(data, measurement) {
   const expected = {
     bajar_peso: 'kg',
@@ -148,7 +177,7 @@ function validateGoalValues(data, measurement) {
       'El objetivo debe ser menor que tu porcentaje inicial.',
     );
 }
-export const createGoal = (userId, data) =>
+const createGoalImpl = (userId, data) =>
   writeFitness(userId, 'CU010_DEFINIR_OBJETIVO', 'objetivos', async (transaction, user) => {
     assert(
       !(await activeGoal(userId, transaction)),
@@ -204,7 +233,9 @@ export const createGoal = (userId, data) =>
       { transaction },
     );
   });
-export const completeGoal = (userId, id) =>
+export const createGoal = (...args) =>
+  new Objetivo({}, { definirObjeto: () => createGoalImpl(...args) }).definirObjeto();
+const completeGoalImpl = (userId, id) =>
   writeFitness(userId, 'CU012_COMPLETAR_OBJETIVO', 'objetivos', async (transaction, user) => {
     const goal = await owned(Goals, id, userId, transaction);
     requireActive(goal);
@@ -213,17 +244,23 @@ export const completeGoal = (userId, id) =>
       { transaction },
     );
   });
-export const removeGoal = (userId, id) =>
+export const completeGoal = (...args) =>
+  new Objetivo({}, { marcarCompletado: () => completeGoalImpl(...args) }).marcarCompletado();
+const removeGoalImpl = (userId, id) =>
   writeFitness(userId, 'CU013_ELIMINAR_OBJETIVO', 'objetivos', async (transaction) => {
     const goal = await owned(Goals, id, userId, transaction);
     assert(goal.estado !== 'eliminado', 404, 'NOT_FOUND', 'No se encontró el objetivo.');
     return goal.update({ estado: 'eliminado', usuario_activo: null }, { transaction });
   });
-export function goalPercentage(initial, target, current) {
+export const removeGoal = (...args) =>
+  new Objetivo({}, { eliminarObjetivo: () => removeGoalImpl(...args) }).eliminarObjetivo();
+function goalPercentageImpl(initial, target, current) {
   if (current == null || initial == null) return null;
   if (target === initial) return current === target ? 100 : 0;
   return round(Math.max(0, Math.min(100, ((current - initial) / (target - initial)) * 100)));
 }
+export const goalPercentage = (...args) =>
+  new Progreso({}, { calcularPorcentaje: () => goalPercentageImpl(...args) }).calcularPorcentaje();
 export async function progressData(userId, user, transaction, days = 90) {
   const measurements = await Measurements.findAll({
     where: { usuario_id: userId },
@@ -298,5 +335,7 @@ export async function progressData(userId, user, transaction, days = 90) {
     diferencia_peso: current && initial ? round(current.peso_kg - initial.peso_kg) : null,
   };
 }
-export const getProgress = (userId, days) =>
+const getProgressImpl = (userId, days) =>
   readFitness(userId, (transaction, user) => progressData(userId, user, transaction, days));
+export const getProgress = (...args) =>
+  new Cliente({}, { verProgreso: () => getProgressImpl(...args) }).verProgreso();

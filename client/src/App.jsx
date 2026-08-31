@@ -23,6 +23,7 @@ import {
   Menu,
   X,
   ArrowUpRight,
+  Bot,
 } from 'lucide-react';
 import { AuthProvider, useAuth, api, useAction } from './lib';
 import { Button, Confirm, Empty, Feedback } from './components/ui';
@@ -42,6 +43,7 @@ const Nutrition = named(() => import('./pages/Nutrition'), 'Nutrition'),
   DietEditor = named(() => import('./pages/Nutrition'), 'DietEditor'),
   DietDetail = named(() => import('./pages/Nutrition'), 'DietDetail');
 const Account = lazy(() => import('./pages/Account')),
+  Assistant = lazy(() => import('./pages/Assistant')),
   AdminUsers = named(() => import('./pages/Admin'), 'AdminUsers'),
   AdminRoles = named(() => import('./pages/Admin'), 'AdminRoles'),
   AdminAudit = named(() => import('./pages/Admin'), 'AdminAudit'),
@@ -71,6 +73,7 @@ const links = [
   ['/nutricion', 'Nutrición', Utensils],
   ['/progreso', 'Mi progreso', ChartNoAxesCombined],
   ['/ejercicios', 'Explorar ejercicios', BookOpen],
+  ['/asistente', 'Asistente IA', Bot],
 ];
 function Protected({ permission, children }) {
   const { user } = useAuth();
@@ -256,6 +259,7 @@ export default function App() {
                 ['dietas/nueva', DietEditor],
                 ['dietas/:id', DietDetail],
                 ['dietas/:id/editar', DietEditor],
+                ['asistente', Assistant],
               ].map(([path, Page]) => (
                 <Route
                   key={path}

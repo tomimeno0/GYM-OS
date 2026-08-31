@@ -47,4 +47,6 @@ El último administrador activo no puede bloquearse, eliminarse ni perder su rol
 
 ## IA
 
-La generación y adaptación automática de rutinas/dietas y el chat no están habilitados, por decisión explícita del responsable del proyecto. No se necesita ningún modelo local ni API key de IA para usar esta entrega.
+En **Asistente IA** podés generar una rutina o dieta a partir de tu medición y objetivo activos. La adaptación requiere un plan existente y contexto de actividad; antes de reemplazarlo pide confirmación. El chat ofrece modo entrenador y soporte, conserva el historial y rechaza consultas ajenas al sistema, ejercicio, hábitos o nutrición general.
+
+La integración usa Cohere por API y no ejecuta modelos locales. Todo resultado debe revisarse: la orientación de IA no reemplaza evaluación médica, nutricional ni profesional.

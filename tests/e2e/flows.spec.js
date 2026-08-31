@@ -89,6 +89,18 @@ test('full manual journey: registration, measurements, goal, routine, workout, n
   await page.getByRole('button', { name: 'Guardar comida', exact: true }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page.locator('.meal-entry')).toContainText('400');
+  await go(page, '/asistente');
+  await expect(page.getByText('DISPONIBLE', { exact: true })).toBeVisible();
+  const planTools = page.locator('.ai-plan-tool');
+  await planTools.nth(0).getByLabel('Preferencias opcionales').fill('Una rutina breve');
+  await planTools.nth(0).getByRole('button', { name: 'Generar con IA' }).click();
+  await expect(planTools.nth(0).getByText('Rutina personal por IA', { exact: true })).toBeVisible();
+  await planTools.nth(1).getByLabel('Preferencias opcionales').fill('Ingredientes simples');
+  await planTools.nth(1).getByRole('button', { name: 'Generar con IA' }).click();
+  await expect(planTools.nth(1).getByText('Dieta personal por IA', { exact: true })).toBeVisible();
+  await fill(page, 'Tu consulta', '¿Cuánto descanso entre series?');
+  await page.getByRole('button', { name: 'Enviar', exact: true }).click();
+  await expect(page.locator('.ai-message.assistant')).toBeVisible();
   await go(page, '/me');
   await fill(page, 'Teléfono', '+54 11 5555 1111');
   await page.getByRole('button', { name: 'Guardar cambios' }).click();
@@ -101,10 +113,7 @@ test('full manual journey: registration, measurements, goal, routine, workout, n
   await expect(page).toHaveURL(/login/);
   expect(errors).toEqual([]);
 });
-test('catalog search, protected navigation and unavailable AI routes', async ({
-  page,
-  request,
-}) => {
+test('catalog search, protected navigation and available AI status', async ({ page, request }) => {
   await go(page, '/dashboard');
   await expect(page).toHaveURL(/login/);
   const email = `catalog-${randomUUID()}@gym-os.test`;
@@ -126,7 +135,9 @@ test('catalog search, protected navigation and unavailable AI routes', async ({
     .click();
   await expect(page.getByRole('dialog')).toContainText('Músculo principal');
   await page.getByRole('button', { name: 'Cerrar', exact: true }).click();
-  expect((await request.get('/api/v1/ai/status')).status()).toBe(404);
+  const aiStatus = await request.get('/api/v1/ai/status');
+  expect(aiStatus.status()).toBe(200);
+  expect((await aiStatus.json()).configurado).toBe(true);
   await page.goto('/admin/usuarios');
   await expect(
     page.getByRole('heading', { name: 'Esta sección necesita otro permiso' }),

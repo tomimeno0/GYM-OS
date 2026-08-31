@@ -1,6 +1,7 @@
 import { models } from '../models/index.js';
 import { dto, owned, readFitness, writeFitness, today, requireActive } from '../lib/domain.js';
 import { assert } from '../lib/errors.js';
+import { RegistroEntrenamiento } from '../domain/uml.js';
 const {
   entrenamientos: Workouts,
   entrenamiento_ejercicios: Entries,
@@ -86,7 +87,7 @@ export const startWorkout = (userId, data) =>
       return workoutDetail(workout.id, userId, transaction);
     },
   );
-export const saveWorkout = (userId, id, data) =>
+const saveWorkoutImpl = (userId, id, data) =>
   writeFitness(userId, 'CU021_REGISTRAR_ENTRENAMIENTO', 'entrenamientos', async (transaction) => {
     const workout = await owned(Workouts, id, userId, transaction);
     assert(
@@ -143,3 +144,8 @@ export const saveWorkout = (userId, id, data) =>
     );
     return workoutDetail(id, userId, transaction);
   });
+export const saveWorkout = (...args) =>
+  new RegistroEntrenamiento(
+    {},
+    { actualizarRegistro: () => saveWorkoutImpl(...args) },
+  ).actualizarRegistro();

@@ -511,6 +511,9 @@ export function Diets() {
         title="Comidas con un plan."
         description="Organizá tus horarios, alimentos y metas nutricionales."
       >
+        <Link className="btn secondary" to="/asistente">
+          Generar con IA
+        </Link>
         <Link className="btn" to="/dietas/nueva">
           <Plus size={17} />
           Crear plan
@@ -524,7 +527,7 @@ export function Diets() {
                 <article className="card plan-card" key={v.id}>
                   <div className="section-title">
                     <Utensils />
-                    <Badge tone="green">MANUAL</Badge>
+                    <Badge tone="green">{v.tipo_generacion === 'ia' ? 'IA' : 'MANUAL'}</Badge>
                   </div>
                   <h2>{v.nombre}</h2>
                   <p className="muted">{v.descripcion || 'Tu plan alimentario personal.'}</p>

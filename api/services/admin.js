@@ -3,6 +3,7 @@ import { models } from '../models/index.js';
 import { atomic, verified, audit, inspectIntegrity } from './integrity.js';
 import { loadUser, publicUser, assertAdminRemains, deleteUserData } from './accounts.js';
 import { assert } from '../lib/errors.js';
+import { Administrador } from '../domain/uml.js';
 
 export async function authorizeActor(id, permission, transaction) {
   const user = await loadUser(id, transaction);
@@ -54,7 +55,7 @@ export async function listRoles(actorId) {
     ).map((r) => r.toJSON());
   });
 }
-export async function saveRole(actorId, id, data) {
+async function saveRoleImpl(actorId, id, data) {
   return atomic(async (transaction) => {
     await authorizeActor(actorId, 'roles:manage', transaction);
     const existing = await models.roles.findOne({
@@ -85,6 +86,10 @@ export async function saveRole(actorId, id, data) {
     return result;
   });
 }
+export const saveRole = (actorId, id, data) => {
+  const operation = id ? 'modificarRoles' : 'crearRoles';
+  return new Administrador({}, { [operation]: () => saveRoleImpl(actorId, id, data) })[operation]();
+};
 export async function deleteRole(actorId, id) {
   return atomic(async (transaction) => {
     await authorizeActor(actorId, 'roles:manage', transaction);
@@ -101,7 +106,7 @@ export async function deleteRole(actorId, id) {
     await audit(transaction, actorId, 'CU036_ELIMINAR_ROL', 'administracion');
   });
 }
-export async function assignRoles(actorId, targetId, roleIds) {
+async function assignRolesImpl(actorId, targetId, roleIds) {
   return atomic(async (transaction) => {
     await authorizeActor(actorId, 'roles:manage', transaction);
     const user = await loadUser(targetId, transaction);
@@ -120,7 +125,9 @@ export async function assignRoles(actorId, targetId, roleIds) {
     return publicUser(await loadUser(targetId, transaction));
   });
 }
-export async function changeStatus(actorId, targetId, estado) {
+export const assignRoles = (...args) =>
+  new Administrador({}, { asignarRoles: () => assignRolesImpl(...args) }).asignarRoles();
+async function changeStatusImpl(actorId, targetId, estado) {
   return atomic(async (transaction) => {
     await authorizeActor(actorId, 'users:manage', transaction);
     const user = await loadUser(targetId, transaction);
@@ -137,7 +144,13 @@ export async function changeStatus(actorId, targetId, estado) {
     return publicUser(user);
   });
 }
-export async function removeUser(actorId, targetId) {
+export const changeStatus = (actorId, targetId, estado) => {
+  const operation = estado === 'activo' ? 'activarUsuario' : 'bloquearUsuario';
+  return new Administrador({}, { [operation]: () => changeStatusImpl(actorId, targetId, estado) })[
+    operation
+  ]();
+};
+async function removeUserImpl(actorId, targetId) {
   return atomic(async (transaction) => {
     await authorizeActor(actorId, 'users:manage', transaction);
     assert(
@@ -149,6 +162,8 @@ export async function removeUser(actorId, targetId) {
     await deleteUserData(targetId, actorId, transaction);
   });
 }
+export const removeUser = (...args) =>
+  new Administrador({}, { eliminarUsuario: () => removeUserImpl(...args) }).eliminarUsuario();
 export async function listAudit(actorId, query) {
   return verified(async (transaction) => {
     await authorizeActor(actorId, 'audit:read', transaction);

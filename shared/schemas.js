@@ -136,6 +136,23 @@ export const dietSchema = z
     comidas: z.array(mealSchema).min(1).max(15),
   })
   .strict();
+export const aiGenerateSchema = z
+  .object({
+    preferencias: text(1000).default(''),
+  })
+  .strict();
+export const aiAdaptSchema = z
+  .object({
+    instrucciones: z.string().trim().min(2).max(1000),
+  })
+  .strict();
+export const aiChatSchema = z
+  .object({
+    conversacion_id: uuid.optional(),
+    modo: z.enum(['entrenador', 'soporte']).default('entrenador'),
+    consulta: z.string().trim().min(1).max(2000),
+  })
+  .strict();
 export const consumedSchema = z
   .object({
     nombre_comida: z.string().trim().min(2).max(150),

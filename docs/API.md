@@ -33,6 +33,14 @@ Los esquemas exactos están en `shared/schemas.js`. Se rechazan propiedades no r
 | GET              | `/exercises?q=&category=&equipment=&page=&limit=` | Catálogo textual filtrado                              |
 | GET              | `/exercises/:id`                                  | Instrucciones de un ejercicio                          |
 | GET              | `/foods?q=nombre` o `/foods?barcode=codigo`       | Búsqueda externa, requiere exactamente un filtro       |
+| GET              | `/ai/status`                                      | Estado sin revelar credenciales                        |
+| POST             | `/ai/routines/generate`                           | Generar rutina con perfil y objetivo                   |
+| POST             | `/ai/routines/:id/adapt`                          | Adaptar rutina con historial                           |
+| POST             | `/ai/diets/generate`                              | Generar dieta orientativa                              |
+| POST             | `/ai/diets/:id/adapt`                             | Adaptar dieta con contexto                             |
+| GET              | `/ai/conversations`                               | Listar conversaciones propias                          |
+| GET              | `/ai/conversations/:id`                           | Conversación y mensajes propios                        |
+| POST             | `/ai/chat`                                        | Consultar en modo entrenador o soporte                 |
 | GET              | `/admin/users?q=&estado=&page=&limit=`            | Usuarios filtrados                                     |
 | GET, POST        | `/admin/roles`                                    | Listar/crear roles                                     |
 | PUT, DELETE      | `/admin/roles/:id`                                | Editar/eliminar rol personalizado                      |
@@ -46,4 +54,4 @@ Los DELETE fitness/administración requieren `{confirmar:true}`. Las rutas de fi
 
 Listas paginadas: `{items,total}`, página inicial 1, límite inicial 25 y máximo 100. Catálogo admite filtros y devuelve opciones de categorías/equipo y páginas. Listas de rutinas, dietas y objetivos devuelven `{items}`.
 
-Salud: `GET /api/health`, fuera de `/api/v1`, comprueba conexión MySQL. Las rutas `/api/v1/ai/*` no existen; responden 404.
+Salud: `GET /api/health`, fuera de `/api/v1`, comprueba conexión MySQL. Las rutas IA tienen límite por minuto, validan alcance y devuelven 503 sin datos del proveedor cuando Cohere no está disponible.

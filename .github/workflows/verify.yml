@@ -24,6 +24,7 @@ jobs:
       DB_USER: gymos
       DB_PASSWORD: ci-database-only
       MAIL_TRANSPORT: file
+      AI_MOCK: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

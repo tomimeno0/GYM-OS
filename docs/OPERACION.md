@@ -25,8 +25,12 @@ Las migraciones son versionadas e idempotentes. La segunda añade valores inicia
 | `ADMIN_EMAIL`, `ADMIN_NAME`, `ADMIN_PASSWORD`                                      | Entrada privada del comando `npm run admin:create`; no se imprime la clave      |
 | `FOOD_API_BASE`                                                                    | Opcional, únicamente dominio oficial `.org` o staging `.net` de Open Food Facts |
 | `FOOD_USER_AGENT`                                                                  | Identificación del proyecto ante Open Food Facts                                |
+| `AI_PROVIDER`                                                                      | Proveedor IA; actualmente `cohere`                                              |
+| `COHERE_API_KEY`                                                                   | Clave privada de Cohere; solo en `.env` o gestor de secretos                    |
+| `COHERE_MODEL`                                                                     | Modelo Cohere; por defecto `command-a-plus-05-2026`                             |
+| `AI_MOCK`                                                                          | Solo pruebas automatizadas; nunca activar en producción                         |
 
-No hay variables de integración IA. Las columnas y tablas originales reservadas por el UML permanecen disponibles, sin servicios ni endpoints que las usen para generar o enviar información.
+La integración IA realiza llamadas HTTPS a Cohere. La clave no se devuelve en estado, logs ni errores. Las respuestas estructuradas se validan con Zod antes de iniciar la transacción de persistencia; un fallo del proveedor o un JSON inválido no guarda planes parciales. `AI_MOCK=true` se reserva para pruebas deterministas.
 
 ## Despliegue real
 
@@ -34,7 +38,7 @@ No hay variables de integración IA. Las columnas y tablas originales reservadas
 2. Definí las tres variables `ADMIN_*` mediante el gestor privado de secretos del entorno y ejecutá `npm run admin:create`. No pongas la contraseña en argumentos o en un comando que quede en el historial. El comando rechaza una cuenta existente: no eleva sus permisos silenciosamente. Quitá esas variables tras crear el administrador.
 3. Ejecutá `npm run build`. `npm start` sirve API y `client/dist` desde Express, en loopback.
 4. Colocá un proxy HTTPS delante, en el mismo host, con `APP_ORIGIN=https://tu-dominio` y `NODE_ENV=production`. El proceso rechaza producción sin HTTPS y las cookies son Secure. No expongas MySQL públicamente.
-5. Configurá SMTP y comprobá recuperación con una cuenta propia de prueba. Sin SMTP real, los correos de desarrollo quedan en `.local/mail/` y no llegan al usuario.
+5. Configurá `COHERE_API_KEY` en el gestor de secretos del entorno y verificá `/api/v1/ai/status`; no la incrustes en el frontend. Configurá SMTP y comprobá recuperación con una cuenta propia de prueba. Sin SMTP real, los correos de desarrollo quedan en `.local/mail/` y no llegan al usuario.
 6. Para acceso detrás de un proxy, planificá límites por usuario/IP: esta versión no confía en `X-Forwarded-For` arbitrario y el límite puede compartirse entre solicitudes que lleguen desde el proxy. No habilites `trust proxy=true` indiscriminadamente.
 7. Usá un supervisor de procesos, respaldos cifrados, monitorización y control de acceso al host. La publicación del código en GitHub no equivale a un despliegue de producción.
 

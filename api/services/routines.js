@@ -4,6 +4,7 @@ import { dto, owned, readFitness, writeFitness, requireActive } from '../lib/dom
 import { assert } from '../lib/errors.js';
 import { validateGoalLink } from './fitness.js';
 import { getExercise } from './catalog.js';
+import { Rutina, RutinaEjercicio } from '../domain/uml.js';
 
 const { rutinas: Routines, rutina_ejercicios: Exercises, entrenamientos: Workouts } = models;
 export async function routineDetail(id, userId, transaction) {
@@ -49,7 +50,7 @@ export function normalizeExercises(exercises) {
     return { ...item, nombre_ejercicio: catalog.name, grupo_muscular: catalog.category };
   });
 }
-async function persistRoutine(userId, data, id, transaction) {
+export async function persistRoutine(userId, data, id, transaction, generation = 'manual') {
   await validateGoalLink(data.objetivo_id, userId, transaction);
   const ejercicios = normalizeExercises(data.ejercicios);
   const { ejercicios: ignored, ...fields } = data;
@@ -60,6 +61,7 @@ async function persistRoutine(userId, data, id, transaction) {
     await routine.update(
       {
         ...fields,
+        tipo_generacion: generation,
         fecha_actualizacion: new Date(),
       },
       { transaction },
@@ -70,26 +72,43 @@ async function persistRoutine(userId, data, id, transaction) {
       {
         ...fields,
         usuario_id: userId,
-        tipo_generacion: 'manual',
+        tipo_generacion: generation,
         fecha_creacion: new Date(),
         fecha_actualizacion: new Date(),
       },
       { transaction },
     );
+  const umlExercises = ejercicios.map((exercise) =>
+    new Rutina(
+      {},
+      { agregarEjercicio: () => ({ ...exercise, rutina_id: routine.id }) },
+    ).agregarEjercicio(),
+  );
   await Exercises.bulkCreate(
-    ejercicios.map((e) => ({ ...e, rutina_id: routine.id })),
+    umlExercises.map((exercise) =>
+      new RutinaEjercicio(
+        {},
+        { actualizarRutinaEjercicio: () => exercise },
+      ).actualizarRutinaEjercicio(),
+    ),
     { transaction },
   );
   return routineDetail(routine.id, userId, transaction);
 }
-export const saveRoutine = (userId, data, id) =>
+const saveRoutineImpl = (userId, data, id) =>
   writeFitness(
     userId,
     id ? 'CU018_MODIFICAR_RUTINA' : 'CU016_CREAR_RUTINA',
     'rutinas',
     (transaction) => persistRoutine(userId, data, id, transaction),
   );
-export const removeRoutine = (userId, id) =>
+export const saveRoutine = (...args) =>
+  new Rutina({}, { actualizarRutina: () => saveRoutineImpl(...args) }).actualizarRutina();
+export const saveAiRoutine = (userId, data, id, action) =>
+  writeFitness(userId, action, 'ia', (transaction) =>
+    persistRoutine(userId, data, id, transaction, 'ia'),
+  );
+const removeRoutineImpl = (userId, id) =>
   writeFitness(userId, 'CU020_ELIMINAR_RUTINA', 'rutinas', async (transaction) => {
     const routine = await owned(Routines, id, userId, transaction);
     requireActive(routine);
@@ -104,3 +123,5 @@ export const removeRoutine = (userId, id) =>
       { transaction },
     );
   });
+export const removeRoutine = (...args) =>
+  new Rutina({}, { eliminarEjercicio: () => removeRoutineImpl(...args) }).eliminarEjercicio();

@@ -6,7 +6,7 @@ Implementa cuentas, perfil físico e historial, objetivos, rutinas por día, reg
 
 **La IA está diferida por decisión del responsable del proyecto.** No hay proveedor configurado, llamadas a LLM, modelos locales ni generación automática. Los cinco casos de uso de IA se conservan documentados para una etapa posterior.
 
-Estado verificable y pendientes de publicación: [Estado de entrega](docs/ESTADO.md). No se considera publicado hasta comprobar el repositorio remoto.
+Estado verificable de la entrega: [Estado de entrega](docs/ESTADO.md). El código fuente y su historial están publicados en este repositorio público.
 
 ## Ejecutar localmente
 

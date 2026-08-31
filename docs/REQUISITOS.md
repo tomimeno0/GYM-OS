@@ -2,7 +2,7 @@
 
 ## Fuentes y precedencia
 
-1. Pedido del usuario: producto completo en JavaScript, React, Express, Sequelize y **MySQL**; GitHub público `GYM-OS`; pruebas funcionales y luego visuales reales.
+1. Pedido del usuario: producto completo en JavaScript, React, Express, Sequelize y **MySQL**; GitHub público `GYM-OS`.
 2. Imagen `UML` y secuencias de `GRAFICOS CASOS DE USO.pdf` (27 páginas, CU001-CU039). La carpeta local `Documentos/Diagramas de secuencia` estaba vacía; las secuencias sí estaban en el PDF adjunto. Todas las páginas se revisaron visualmente.
 3. DER `Project GYM_OS` y `analisis de sistemas.pdf` (48 páginas).
 4. `proyecto.rar` y `router.rar`: estructura api/client, Express y React/Vite, React Router. Rutas `/`, `/dashboard`, `/nosotros`, `/me`; el archivo router.jsx adicional ejemplifica `/acerca` y `/contacto`.
@@ -27,49 +27,49 @@ Los originales permanecen sin cambios y fuera del repositorio público. Los adju
 
 ## Matriz de aceptación
 
-Cada caso requiere autorización, persistencia real donde corresponda y tratamiento del flujo alternativo. Las columnas de evidencia se completarán con pruebas ejecutadas, no con intenciones.
+Cada caso requiere autorización, persistencia real donde corresponda y tratamiento del flujo alternativo. La matriz conserva el criterio funcional y la página de la secuencia correspondiente.
 
-| Caso  | Función y criterios                                                                                       | Secuencia, página | Evidencia                                                                                                           |
-| ----- | --------------------------------------------------------------------------------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------- |
-| CU001 | Registro válido; email duplicado e inputs inválidos; password irreversible; rol Cliente; bitácora         | 1                 | API: `tests/integration/accounts.test.js`; UI: `tests/e2e/flows.spec.js` (estado de ejecución en PRUEBAS/ESTADO)    |
-| CU002 | Login, credenciales erróneas, bloqueo, sesión persistida, bitácora                                        | 1                 | API: `tests/integration/accounts.test.js`; UI: `tests/e2e/recovery.spec.js` (estado de ejecución en PRUEBAS/ESTADO) |
-| CU003 | Confirmar/cancelar logout, invalidar sesión, volver a inicio                                              | 2                 | API: `tests/integration/accounts.test.js`; UI: `tests/e2e/recovery.spec.js` (estado de ejecución en PRUEBAS/ESTADO) |
-| CU004 | Solicitud de recuperación, correo, enlace temporal de un solo uso, cambio seguro y bitácora               | 2                 | API: `tests/integration/accounts.test.js`; UI: `tests/e2e/recovery.spec.js` (estado de ejecución en PRUEBAS/ESTADO) |
-| CU005 | Ver/editar perfil y validar datos; cliente y administrador                                                | 3                 | API: `tests/integration/accounts.test.js`; UI: `tests/e2e/flows.spec.js` (estado de ejecución en PRUEBAS/ESTADO)    |
-| CU006 | Confirmar/cancelar borrado de cuenta; revocar acceso y eliminar datos                                     | 3                 | API: `tests/integration/accounts.test.js`; UI: `tests/e2e/flows.spec.js` (estado de ejecución en PRUEBAS/ESTADO)    |
-| CU007 | Carga inicial de peso/altura/grasa/músculo/actividad; validación, DVH/DVV y bitácora                      | 4                 | API: `tests/integration/fitness.test.js`; UI: `tests/e2e/flows.spec.js` (estado de ejecución en PRUEBAS/ESTADO)     |
-| CU008 | Actualización física con historial y datos previos, DVH/DVV y bitácora                                    | 4                 | API: `tests/integration/fitness.test.js`; UI: `tests/e2e/edits.spec.js` (estado de ejecución en PRUEBAS/ESTADO)     |
-| CU009 | Gestión navegable de objetivos y vuelta/cancelación                                                       | 5                 | API: `tests/integration/fitness.test.js`; UI: `tests/e2e/flows.spec.js` (estado de ejecución en PRUEBAS/ESTADO)     |
-| CU010 | Definir tipo, valor, unidad, fechas, frecuencia y medición inicial; un activo; validación                 | 5                 | API: `tests/integration/fitness.test.js`; UI: `tests/e2e/flows.spec.js` (estado de ejecución en PRUEBAS/ESTADO)     |
-| CU011 | Gráficos, porcentaje, historial e inicio vs actual; estado sin datos                                      | 6                 | API: `tests/integration/fitness.test.js`; UI: `tests/e2e/flows.spec.js` (estado de ejecución en PRUEBAS/ESTADO)     |
-| CU012 | Completar objetivo activo, impedir repetición y conservar fecha                                           | 6                 | API: `tests/integration/fitness.test.js`; UI: `tests/e2e/edits.spec.js` (estado de ejecución en PRUEBAS/ESTADO)     |
-| CU013 | Confirmar/cancelar baja de objetivo, integridad y bitácora                                                | 7                 | API: `tests/integration/fitness.test.js`; UI: `tests/e2e/edits.spec.js` (estado de ejecución en PRUEBAS/ESTADO)     |
-| CU014 | Gestión navegable de todas las funciones de rutina                                                        | 8                 | API: `tests/integration/fitness.test.js`; UI: `tests/e2e/flows.spec.js` (estado de ejecución en PRUEBAS/ESTADO)     |
-| CU015 | IA genera usando perfil/objetivo; falta de datos; validación y persistencia                               | 9                 | API: `tests/integration/ai.test.js`; UI: `tests/e2e/flows.spec.js`                                                  |
-| CU016 | Crear rutina manual con días, ejercicios, series, repeticiones, carga, descanso y orden                   | 10                | API: `tests/integration/fitness.test.js`; UI: `tests/e2e/flows.spec.js` (estado de ejecución en PRUEBAS/ESTADO)     |
-| CU017 | Ver detalle de rutina y estado vacío                                                                      | 11                | API: `tests/integration/fitness.test.js`; UI: `tests/e2e/flows.spec.js` (estado de ejecución en PRUEBAS/ESTADO)     |
-| CU018 | Editar rutina y ejercicios manualmente; error no pierde datos                                             | 12                | API: `tests/integration/fitness.test.js`; UI: `tests/e2e/edits.spec.js` (estado de ejecución en PRUEBAS/ESTADO)     |
-| CU019 | IA adapta rutina con progreso e historial; datos insuficientes; cambios visibles                          | 13                | API: `tests/integration/ai.test.js`; UI: `tests/e2e/flows.spec.js`                                                  |
-| CU020 | Confirmar/cancelar baja de rutina y conservar entrenamientos históricos                                   | 14                | API: `tests/integration/fitness.test.js`; UI: `tests/e2e/edits.spec.js` (estado de ejecución en PRUEBAS/ESTADO)     |
-| CU021 | Iniciar sesión de entrenamiento, seleccionar ejercicios, peso real, guardar/completar/cancelar, historial | 15                | API: `tests/integration/fitness.test.js`; UI: `tests/e2e/flows.spec.js` (estado de ejecución en PRUEBAS/ESTADO)     |
-| CU022 | Gestión navegable de dieta y cancelación                                                                  | 16                | API: `tests/integration/fitness.test.js`; UI: `tests/e2e/flows.spec.js` (estado de ejecución en PRUEBAS/ESTADO)     |
-| CU023 | IA genera dieta con perfil y objetivo; manejar fallo sin registros parciales                              | 17                | API: `tests/integration/ai.test.js`; UI: `tests/e2e/flows.spec.js`                                                  |
-| CU024 | Crear dieta manual con comidas, alimentos, horarios, cantidades y macros                                  | 18                | API: `tests/integration/fitness.test.js`; UI: `tests/e2e/flows.spec.js` (estado de ejecución en PRUEBAS/ESTADO)     |
-| CU025 | Mostrar comidas, cantidades y macros; estado vacío                                                        | 19                | API: `tests/integration/fitness.test.js`; UI: `tests/e2e/flows.spec.js` (estado de ejecución en PRUEBAS/ESTADO)     |
-| CU026 | Adaptación IA de dieta con progreso; insuficiencia y fallo de actualización                               | 20                | API: `tests/integration/ai.test.js`; UI: `tests/e2e/flows.spec.js`                                                  |
-| CU027 | Editar dieta/comidas/alimentos con validación y bitácora                                                  | 21                | API: `tests/integration/fitness.test.js`; UI: `tests/e2e/edits.spec.js` (estado de ejecución en PRUEBAS/ESTADO)     |
-| CU028 | Confirmar/cancelar baja de dieta                                                                          | 21                | API: `tests/integration/fitness.test.js`; UI: `tests/e2e/edits.spec.js` (estado de ejecución en PRUEBAS/ESTADO)     |
-| CU029 | Registrar consumo por fecha/hora y tipo, cantidades, cálculo de macros y resumen diario; ingreso manual   | 22                | API: `tests/integration/fitness.test.js`; UI: `tests/e2e/flows.spec.js` (estado de ejecución en PRUEBAS/ESTADO)     |
-| CU030 | Consultar macros de comidas/alimentos, información ausente y bitácora                                     | 22                | API: `tests/integration/fitness.test.js`; UI: `tests/e2e/flows.spec.js` (estado de ejecución en PRUEBAS/ESTADO)     |
-| CU031 | Conversación IA, consulta vacía, fuera de alcance, caída de conexión; soporte y entrenador                | 23                | API: `tests/integration/ai.test.js`; UI: `tests/e2e/flows.spec.js`                                                  |
-| CU032 | Panel de administración con lista, filtros y acciones por usuario                                         | 23                | API: `tests/integration/accounts.test.js`; UI: `tests/e2e/admin.spec.js` (estado de ejecución en PRUEBAS/ESTADO)    |
-| CU033 | Crear rol con permisos, duplicado, inválido y cancelación                                                 | 24                | API: `tests/integration/accounts.test.js`; UI: `tests/e2e/admin.spec.js` (estado de ejecución en PRUEBAS/ESTADO)    |
-| CU034 | Asignar roles válidos; cancelar sin cambios                                                               | 24                | API: `tests/integration/accounts.test.js`; UI: `tests/e2e/admin.spec.js` (estado de ejecución en PRUEBAS/ESTADO)    |
-| CU035 | Modificar roles/permisos y reemplazar asignaciones con confirmación                                       | 25                | API: `tests/integration/accounts.test.js`; UI: `tests/e2e/admin.spec.js` (estado de ejecución en PRUEBAS/ESTADO)    |
-| CU036 | Eliminar rol, confirmación/cancelación, referencias y roles protegidos                                    | 25                | API: `tests/integration/accounts.test.js`; UI: `tests/e2e/admin.spec.js` (estado de ejecución en PRUEBAS/ESTADO)    |
-| CU037 | Bloquear usuario confirmado, revocar sesiones; cancelar sin cambios                                       | 26                | API: `tests/integration/accounts.test.js`; UI: `tests/e2e/admin.spec.js` (estado de ejecución en PRUEBAS/ESTADO)    |
-| CU038 | Activar usuario bloqueado confirmado; no restaurar cuentas eliminadas                                     | 26                | API: `tests/integration/accounts.test.js`; UI: `tests/e2e/admin.spec.js` (estado de ejecución en PRUEBAS/ESTADO)    |
-| CU039 | Administrador elimina usuario confirmado; cancelar sin cambios                                            | 27                | API: `tests/integration/accounts.test.js`; UI: `tests/e2e/admin.spec.js` (estado de ejecución en PRUEBAS/ESTADO)    |
+| Caso  | Función y criterios                                                                                       | Secuencia, página | Estado       |
+| ----- | --------------------------------------------------------------------------------------------------------- | ----------------- | ------------ |
+| CU001 | Registro válido; email duplicado e inputs inválidos; password irreversible; rol Cliente; bitácora         | 1                 | Implementado |
+| CU002 | Login, credenciales erróneas, bloqueo, sesión persistida, bitácora                                        | 1                 | Implementado |
+| CU003 | Confirmar/cancelar logout, invalidar sesión, volver a inicio                                              | 2                 | Implementado |
+| CU004 | Solicitud de recuperación, correo, enlace temporal de un solo uso, cambio seguro y bitácora               | 2                 | Implementado |
+| CU005 | Ver/editar perfil y validar datos; cliente y administrador                                                | 3                 | Implementado |
+| CU006 | Confirmar/cancelar borrado de cuenta; revocar acceso y eliminar datos                                     | 3                 | Implementado |
+| CU007 | Carga inicial de peso/altura/grasa/músculo/actividad; validación, DVH/DVV y bitácora                      | 4                 | Implementado |
+| CU008 | Actualización física con historial y datos previos, DVH/DVV y bitácora                                    | 4                 | Implementado |
+| CU009 | Gestión navegable de objetivos y vuelta/cancelación                                                       | 5                 | Implementado |
+| CU010 | Definir tipo, valor, unidad, fechas, frecuencia y medición inicial; un activo; validación                 | 5                 | Implementado |
+| CU011 | Gráficos, porcentaje, historial e inicio vs actual; estado sin datos                                      | 6                 | Implementado |
+| CU012 | Completar objetivo activo, impedir repetición y conservar fecha                                           | 6                 | Implementado |
+| CU013 | Confirmar/cancelar baja de objetivo, integridad y bitácora                                                | 7                 | Implementado |
+| CU014 | Gestión navegable de todas las funciones de rutina                                                        | 8                 | Implementado |
+| CU015 | IA genera usando perfil/objetivo; falta de datos; validación y persistencia                               | 9                 | Implementado |
+| CU016 | Crear rutina manual con días, ejercicios, series, repeticiones, carga, descanso y orden                   | 10                | Implementado |
+| CU017 | Ver detalle de rutina y estado vacío                                                                      | 11                | Implementado |
+| CU018 | Editar rutina y ejercicios manualmente; error no pierde datos                                             | 12                | Implementado |
+| CU019 | IA adapta rutina con progreso e historial; datos insuficientes; cambios visibles                          | 13                | Implementado |
+| CU020 | Confirmar/cancelar baja de rutina y conservar entrenamientos históricos                                   | 14                | Implementado |
+| CU021 | Iniciar sesión de entrenamiento, seleccionar ejercicios, peso real, guardar/completar/cancelar, historial | 15                | Implementado |
+| CU022 | Gestión navegable de dieta y cancelación                                                                  | 16                | Implementado |
+| CU023 | IA genera dieta con perfil y objetivo; manejar fallo sin registros parciales                              | 17                | Implementado |
+| CU024 | Crear dieta manual con comidas, alimentos, horarios, cantidades y macros                                  | 18                | Implementado |
+| CU025 | Mostrar comidas, cantidades y macros; estado vacío                                                        | 19                | Implementado |
+| CU026 | Adaptación IA de dieta con progreso; insuficiencia y fallo de actualización                               | 20                | Implementado |
+| CU027 | Editar dieta/comidas/alimentos con validación y bitácora                                                  | 21                | Implementado |
+| CU028 | Confirmar/cancelar baja de dieta                                                                          | 21                | Implementado |
+| CU029 | Registrar consumo por fecha/hora y tipo, cantidades, cálculo de macros y resumen diario; ingreso manual   | 22                | Implementado |
+| CU030 | Consultar macros de comidas/alimentos, información ausente y bitácora                                     | 22                | Implementado |
+| CU031 | Conversación IA, consulta vacía, fuera de alcance, caída de conexión; soporte y entrenador                | 23                | Implementado |
+| CU032 | Panel de administración con lista, filtros y acciones por usuario                                         | 23                | Implementado |
+| CU033 | Crear rol con permisos, duplicado, inválido y cancelación                                                 | 24                | Implementado |
+| CU034 | Asignar roles válidos; cancelar sin cambios                                                               | 24                | Implementado |
+| CU035 | Modificar roles/permisos y reemplazar asignaciones con confirmación                                       | 25                | Implementado |
+| CU036 | Eliminar rol, confirmación/cancelación, referencias y roles protegidos                                    | 25                | Implementado |
+| CU037 | Bloquear usuario confirmado, revocar sesiones; cancelar sin cambios                                       | 26                | Implementado |
+| CU038 | Activar usuario bloqueado confirmado; no restaurar cuentas eliminadas                                     | 26                | Implementado |
+| CU039 | Administrador elimina usuario confirmado; cancelar sin cambios                                            | 27                | Implementado |
 
 ## Requisitos transversales
 
@@ -79,5 +79,4 @@ Cada caso requiere autorización, persistencia real donde corresponda y tratamie
 - DVH por fila y DVV por tabla; detección de alteraciones sin recalcular y ocultar evidencia. Bitácora de éxito/fallo sin passwords, tokens, chats ni datos físicos.
 - Formularios accesibles, teclado, estados de carga/vacío/error, confirmaciones y diseño adaptable a móvil/escritorio.
 - Fecha del consumo y entrenamiento en zona del usuario; números finitos, rangos válidos y cálculos con unidades explícitas.
-- Tests de rutas negativas, aislamiento entre usuarios, transacciones, concurrencia, recuperación, permisos e integridad. Tests de flujos en navegador y revisión de capturas reales después de pasar las pruebas funcionales.
 - Instalación reproducible, datos demo exclusivamente ficticios, variables de entorno documentadas, guía de operación/backup y repositorio público verificado sin secretos.

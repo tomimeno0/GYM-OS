@@ -2,7 +2,7 @@
 
 ## Organización
 
-Monorepositorio npm workspaces: `api/` (Express, Sequelize, MySQL), `client/` (React, Vite, React Router), `shared/` (validaciones y constantes de dominio), `tests/` (integración y navegador), `docs/` y `scripts/`.
+Monorepositorio npm workspaces: `api/` (Express, Sequelize, MySQL), `client/` (React, Vite, React Router), `shared/` (validaciones y constantes de dominio), `docs/` y `scripts/`.
 
 La base de los adjuntos se conserva como estructura, no como funcionalidad ficticia: se reemplazan los arrays/mock de usuarios, CORS abierto y rutas de ejemplo por servicios persistentes. La navegación conserva Inicio `/`, Dashboard `/dashboard`, Nosotros `/nosotros` y Mi perfil `/me`. Se añaden `/objetivos`, `/rutinas`, `/rutinas/:id`, `/entrenamientos/:id`, `/nutricion`, `/dietas/:id`, `/progreso`, `/ejercicios`, `/admin/usuarios`, `/asistente`, `/admin/roles`, `/admin/bitacora` y `/admin/integridad`. `/acerca` y `/contacto` son alias a Nosotros.
 
@@ -28,4 +28,4 @@ Cada pantalla incluye estado vacío útil, carga, reintento y confirmaciones exp
 
 ## Entorno
 
-Node 24, MySQL 8.4 aislado en Docker; Compose para reproducción. Desarrollo local usa puerto API 3000, Vite 5173, MySQL 3307 (no interfiere con instalaciones existentes), correo local de desarrollo y Cohere por API. Entorno de pruebas con DB separada `gym_os_test`. En esta computadora se utiliza el contexto Docker `colima-gymos`, sin alterar el contexto predeterminado.
+Node 24, MySQL 8.4 aislado en Docker; Compose para reproducción. Desarrollo local usa puerto API 3000, Vite 5173, MySQL 3307 (no interfiere con instalaciones existentes), correo local de desarrollo y Cohere por API. En esta computadora se utiliza el contexto Docker `colima-gymos`, sin alterar el contexto predeterminado.

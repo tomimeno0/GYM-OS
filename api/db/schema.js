@@ -23,7 +23,6 @@ const base = () => ({
 });
 const table = (attributes) => ({ ...base(), ...attributes });
 
-// Initial schema: extend through a NEW migration when changing an existing database.
 export const initialSchema = {
   usuarios: table({
     nombre: str(100, true),

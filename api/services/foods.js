@@ -32,7 +32,6 @@ export async function searchFoods(q, barcode) {
   const key = barcode || q;
   const cached = cache.get(key);
   if (cached && cached.expires > Date.now()) return cached.result;
-  // All users share this server's upstream IP quota. Cache hits do not consume it.
   while (requests[0] < Date.now() - 60000) requests.shift();
   assert(
     requests.length < 8,

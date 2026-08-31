@@ -38,7 +38,6 @@ export async function inspectIntegrity(transaction, tableNames = tables, omitted
   }
   return { ok: result.every((r) => r.ok), tablas: result };
 }
-// Only used after verified writes or on first migration of an empty database.
 export async function signDatabase(transaction) {
   for (const table of tables) {
     const rows = await rowsOf(table, transaction);

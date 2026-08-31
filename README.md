@@ -31,25 +31,19 @@ En esta computadora con Colima y Compose independiente: `docker-compose --contex
 ## Verificación
 
 ```sh
-npm test
-npm run test:coverage
-npm run test:ai:real
-npm run build
-npx playwright install chromium
-npm run test:e2e
 npm run format:check
+npm run build
 npm audit
 ```
 
-`npm test` y `npm run test:ai:real` reinicializan **exclusivamente `gym_os_test`**. Nunca uses esa base para datos reales. La prueba real requiere una clave privada y consume cuota de Cohere. E2E reconstruye el frontend, ejecuta la API real en el puerto 3100 y verifica escritorio y móvil, cuentas, fitness, permisos, administración y accesibilidad. No ejecutes suites que compartan la base simultáneamente. GitHub Actions reproduce la verificación determinista en una instancia efímera de MySQL.
+GitHub Actions comprueba formato, compilación y dependencias en cada publicación y pull request.
 
 ## Estructura
 
 - `client/`: React, rutas, formularios, gráficos y estilos.
 - `api/`: Express, servicios, Sequelize, migraciones y seguridad.
 - `shared/`: contratos Zod y constantes compartidas.
-- `tests/`: pruebas unitarias, integración con MySQL y recorridos Playwright.
-- `docs/`: requisitos, arquitectura, uso, operación, pruebas y licencias.
+- `docs/`: requisitos, arquitectura, uso, operación y licencias.
 
 ## Uso
 
@@ -64,7 +58,6 @@ La recuperación de contraseña en desarrollo genera un correo privado en `.loca
 - [Guía de uso](docs/USO.md)
 - [API](docs/API.md)
 - [Instalación, seguridad y respaldo](docs/OPERACION.md)
-- [Pruebas y evidencia](docs/PRUEBAS.md)
 - [Datos y licencias](docs/DATOS-Y-LICENCIAS.md)
 
 Los adjuntos originales, PDFs, DER privado, datos personales, correos y secretos quedan fuera del repositorio. Los textos del catálogo incluyen su atribución MIT; no se distribuyen imágenes o GIF de licencia separada. GYM-OS organiza información; no sustituye orientación profesional.

@@ -227,7 +227,6 @@ export const UML_METHODS = Object.freeze({
   Seguridad: ['encriptarRreversible', 'encriptarIrreversible', 'digitoVerificador'],
 });
 
-// Nombres literales de mensajes que aparecen en las secuencias y difieren del UML de clases.
 export const SEQUENCE_METHODS = Object.freeze({
   Rutina: ['generarRutinaIA', 'modificarRutinaIA', 'eliminarRutina'],
   Dieta: ['generarDietaIA', 'modificarDietaIA', 'eliminarDieta'],

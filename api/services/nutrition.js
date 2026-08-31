@@ -16,7 +16,6 @@ import { validateGoalLink } from './fitness.js';
 import { Comida, Dieta } from '../domain/uml.js';
 
 const { dietas: Diets, dieta_comidas: Meals, comidas_consumidas: Consumed } = models;
-// Values are PER 100 g/ml or PER ONE portion; quantities are never summed across incompatible units.
 function calculateMacrosImpl(foods) {
   const total = { calorias: 0, proteinas_g: 0, carbohidratos_g: 0, grasas_g: 0 };
   for (const food of foods) {
@@ -199,7 +198,6 @@ export async function nutritionData(userId, user, transaction, date, dietId) {
     dieta: diet ? await dietDetail(diet.id, userId, transaction) : null,
   };
 }
-// CU030 explicitly requires a read audit event; this is a transaction because it writes the event.
 export const getNutrition = (userId, day, dietId) =>
   writeFitness(userId, 'CU030_CONSULTAR_MACROS', 'nutricion', (transaction, user) =>
     nutritionData(userId, user, transaction, day, dietId),

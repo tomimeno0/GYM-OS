@@ -288,7 +288,6 @@ export async function progressData(userId, user, transaction, days = 90) {
     current = measurements.at(-1) || null;
   const goalProgress = goals.map((goal) => {
     const base = goal.valor_inicial ?? (goal.unidad === 'kg' ? goal.peso_inicial : null);
-    // Completed goals are a user-declared milestone; raw measured progress remains separately visible.
     const cutoff = goal.fecha_completado
       ? DateTime.fromISO(goal.fecha_completado, { zone: user.zona_horaria }).endOf('day').toMillis()
       : Infinity;

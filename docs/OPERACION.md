@@ -4,7 +4,7 @@
 
 `npm ci` reproduce las versiones del lockfile. `npm run setup` genera cuatro secretos independientes y la contraseña de demostración, con permisos 0600. Nunca reemplaza `.env`. No copiar los secretos de otra instalación.
 
-Compose ejecuta únicamente MySQL 8.4 en un volumen persistente y expone `DB_PORT` (3307 por defecto) solo en loopback. Esto permite comprobar una instalación limpia con otro puerto y nombre de proyecto sin tocar un volumen existente. `scripts/mysql-init.sql` habilita `gym_os_test` al crear un volumen nuevo. Si cambiás `DB_USER`, adaptá ese script antes de crear el volumen; no cambies usuarios de una base existente sin una migración específica.
+Compose ejecuta únicamente MySQL 8.4 en un volumen persistente y expone `DB_PORT` (3307 por defecto) solo en loopback. Esto permite comprobar una instalación limpia con otro puerto y nombre de proyecto sin tocar un volumen existente. No cambies usuarios de una base existente sin una migración específica.
 
 Las migraciones son versionadas e idempotentes. La segunda añade valores iniciales de objetivos y distancia de entrenamientos, comprueba las firmas anteriores y vuelve a firmar el esquema actualizado. **Detené la API antes de migrar** y tomá un respaldo. No uses `sequelize.sync({force:true})` sobre datos reales.
 
@@ -19,7 +19,7 @@ Las migraciones son versionadas e idempotentes. La segunda añade valores inicia
 | `MYSQL_ROOT_PASSWORD`                                                              | Inicialización del contenedor; no se usa en la API                              |
 | `ENCRYPTION_KEY`                                                                   | 32 bytes hex; AES-256-GCM para teléfono                                         |
 | `INTEGRITY_KEY`                                                                    | 32 bytes hex independientes; HMAC de integridad                                 |
-| `MAIL_TRANSPORT`                                                                   | `file` solo para desarrollo/pruebas; SMTP para uso real                         |
+| `MAIL_TRANSPORT`                                                                   | `file` solo para desarrollo; SMTP para uso real                                 |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `MAIL_FROM` | Entrega real de recuperación                                                    |
 | `DEMO_PASSWORD`                                                                    | Solo cuentas ficticias creadas con `--demo`                                     |
 | `ADMIN_EMAIL`, `ADMIN_NAME`, `ADMIN_PASSWORD`                                      | Entrada privada del comando `npm run admin:create`; no se imprime la clave      |
@@ -28,10 +28,10 @@ Las migraciones son versionadas e idempotentes. La segunda añade valores inicia
 | `AI_PROVIDER`                                                                      | Proveedor IA; actualmente `cohere`                                              |
 | `COHERE_API_KEY`                                                                   | Clave privada de Cohere; solo en `.env` o gestor de secretos                    |
 | `COHERE_MODEL`                                                                     | Modelo Cohere; por defecto `command-a-plus-05-2026`                             |
-| `AI_MOCK`                                                                          | Solo pruebas automatizadas; nunca activar en producción                         |
+| `AI_MOCK`                                                                          | Diagnóstico local determinista; nunca activar en producción                     |
 | `AI_TIMEOUT_MS`                                                                    | Timeout por intento contra Cohere; 60000 ms por defecto                         |
 
-La integración IA realiza llamadas HTTPS a Cohere únicamente después del consentimiento del usuario. La clave no se devuelve en estado, logs ni errores. Las respuestas estructuradas se validan con Zod y límites de seguridad antes de iniciar la transacción; un fallo, timeout, JSON inválido o plan inseguro no guarda cambios parciales. Solo se reintentan una vez los timeouts, `429` y errores `5xx`; los errores de contrato no se ocultan. `AI_MOCK=true` se reserva para pruebas deterministas.
+La integración IA realiza llamadas HTTPS a Cohere únicamente después del consentimiento del usuario. La clave no se devuelve en estado, logs ni errores. Las respuestas estructuradas se validan con Zod y límites de seguridad antes de iniciar la transacción; un fallo, timeout, JSON inválido o plan inseguro no guarda cambios parciales. Solo se reintentan una vez los timeouts, `429` y errores `5xx`; los errores de contrato no se ocultan. `AI_MOCK=true` se reserva para diagnósticos locales deterministas.
 
 ## Despliegue real
 

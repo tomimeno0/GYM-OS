@@ -79,7 +79,6 @@ export async function register(data) {
 }
 async function loginImpl({ email, password }) {
   const existing = await Users.findOne({ where: { email } });
-  // Equal-cost hashing for unknown emails, without logging or returning supplied credentials.
   const valid = existing
     ? await verifyPassword(password, existing.password_hash)
     : (await hashPassword(password), false);

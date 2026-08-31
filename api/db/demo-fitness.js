@@ -8,7 +8,6 @@ import { saveRoutine } from '../services/routines.js';
 import { saveDiet, saveConsumed } from '../services/nutrition.js';
 import { startWorkout, saveWorkout } from '../services/workouts.js';
 
-// Synthetic demonstration data only. Never change an account with existing fitness records.
 export async function seedFitnessDemo(email = 'cliente@gym-os.demo') {
   if (!['cliente@gym-os.demo', 'visual-qa@gym-os.test'].includes(email))
     throw new Error('Solo cuentas ficticias de demostración.');

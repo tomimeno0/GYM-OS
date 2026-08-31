@@ -19,7 +19,6 @@ export async function migrate() {
     await migrateFitness(qi);
     return;
   }
-  // DDL is not transactional in MySQL. Each operation is idempotent to recover a failed initial migration.
   for (const [table, fields] of Object.entries(schema)) {
     await qi.createTable(table, fields, {
       charset: 'utf8mb4',
@@ -61,7 +60,6 @@ async function migrateFitness(qi) {
   );
   if (!(await inspectIntegrity(undefined, Object.keys(schema), omitted)).ok)
     throw new Error('La migración requiere integridad válida del esquema anterior.');
-  // Run migrations with the API stopped. DDL commits in MySQL; null checks make interrupted retries safe.
   for (const [table, columns] of Object.entries(fitnessColumns)) {
     const current = await qi.describeTable(table);
     for (const [name, definition] of Object.entries(columns)) {

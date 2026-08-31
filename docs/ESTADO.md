@@ -1,34 +1,34 @@
-# Estado de implementación
+# Estado de entrega
 
-La meta completa permanece activa; no se considera un MVP ni una entrega final.
+El producto manual está implementado. La IA quedó diferida por pedido explícito del usuario; no es una funcionalidad fallida o simulada. La publicación remota todavía está pendiente y no se declara una entrega final hasta comprobarla.
 
-## Realizado
+## Implementado
 
-- Inventario y extracción de todos los adjuntos; lectura del UML y las 27 páginas de secuencias, CU001-CU039. Revisión de análisis de sistemas, DER, estructura api/client y rutas de referencia.
-- Requisitos trazables y decisiones de conflictos documentadas. Frontend definido, aún no implementado.
-- Monorepositorio npm workspaces, dependencias fijadas, configuración privada y Compose MySQL 8.4.
-- Esquema inicial Sequelize para las entidades del DER y extensiones UML: historial físico, entrenamientos por ejercicio, alimentos por comida, sesiones, recuperaciones y conversaciones.
-- Migración idempotente inicial, roles de sistema, cuentas demo explícitas y aleatorias.
-- API de autenticación/perfil/administración, permisos, revocación de sesiones, recuperación, eliminación y bitácora.
-- scrypt, AES-256-GCM, tokens con hash, DVH/DVV autenticados y transacciones que rechazan datos alterados.
-- Auditoría npm sin vulnerabilidades tras actualizar uuid transitivo a 11.1.1 (Sequelize 6 sigue siendo obligatorio).
+- Análisis de todos los adjuntos y revisión visual de UML y 27 páginas de secuencias. Precedencia y contradicciones documentadas.
+- JavaScript, React, Express, Sequelize y MySQL 8.4. Migraciones versionadas, roles iniciales y datos ficticios opcionales.
+- Cuentas, recuperación, perfil, roles/permisos, bloqueo/activación, bitácora, integridad y eliminación de datos personales.
+- Medidas históricas, objetivos, rutinas manuales, sesiones con cargas reales, planes alimentarios, registro de consumo, macros y progreso.
+- Catálogo textual completo de 1.324 ejercicios con atribución MIT, sin imágenes/GIF con licencia separada.
+- Frontend adaptable: inicio, acceso, panel, objetivos, progreso, catálogo, rutinas, entrenamiento, nutrición, cuenta y administración.
+- Documentación de instalación, uso, API, seguridad, respaldo, licencias y pruebas. Configuración de GitHub Actions para verificación reproducible.
+- Integración IA inicial retirada: sin cliente, servicios, rutas, variables o contenedor de IA. Se detuvo el servidor local iniciado para la tarea, se quitó la descarga del modelo y se desinstaló Ollama junto con las dependencias que esta tarea había agregado; también se retiraron las claves locales que esa ejecución creó. Las tablas/columnas del esquema original reservadas para IA no ejecutan ninguna integración.
 
-## Verificado
+## Validación
 
-Última ejecución: 21 pruebas aprobadas en MySQL real, incluyendo expiración y concurrencia. Incluye flujos negativos, CSRF, permisos efectivos, bloqueo, borrado, recuperación de un solo uso y alteración deliberada de datos sin ocultarla con recálculo.
+Verificación final del 31/08/2026: **43 pruebas de backend aprobadas** y **14 pruebas de navegador aprobadas**, en escritorio y móvil. La suite de cuentas se repitió tres veces por separado sin fallos. Build y formato correctos; auditoría npm sin vulnerabilidades. El escaneo de los 83 archivos preparados para Git no encontró valores de los secretos privados del entorno.
 
-## Trabajo pendiente
+También se extrajo el árbol de la aplicación a una ruta limpia, sin `.env` ni `node_modules`; se instalaron dependencias desde el lockfile, se generaron claves nuevas y se levantó una segunda instancia desechable de MySQL 8.4 en el puerto 3308. Esa instalación repitió correctamente las 43 pruebas, el build y los 14 recorridos E2E. El contenedor, volumen y copia temporal se eliminaron después de verificarla.
 
-1. Servicios y rutas de mediciones/objetivos/progreso, rutinas/entrenamientos, dieta/consumo/macros.
-2. Dataset completo MIT, atribuciones y biblioteca; no reutilizar imágenes/GIFs de Gym visual sin licencia.
-3. IA real (proveedor local/configurable), generación/adaptación validada, chat de soporte/entrenador y pruebas con proveedor real además de dobles de prueba.
-4. Todo el frontend, conservando rutas `/`, `/dashboard`, `/nosotros`, `/me` y completando los módulos.
-5. Ampliar pruebas de integración por CU, pruebas de navegación de extremo a extremo y revisión visual en navegador desktop/móvil.
-6. Documentación de operación/backup, dataset, API, pruebas y seguridad; reproducibilidad de instalación.
-7. Crear/publicar y verificar repositorio público GitHub `tomimeno0/GYM-OS` sin secretos. El perfil conectado `tomimeno0` fue confirmado; aún no se creó el remoto.
+La revisión visual comprobó panel vacío y con datos, rutinas, nutrición y navegación móvil a 390 px. Se corrigieron contraste, etiquetas de formularios, manejo de errores de conexión y desplazamiento del menú móvil para acceder a cerrar sesión. Las capturas usan datos ficticios y están en `docs/screenshots/`. Consultar [PRUEBAS.md](PRUEBAS.md) para alcance y limitaciones.
 
-## Entorno local de trabajo
+## Pendiente externo
 
-Docker/Colima perfil y contexto `colima-gymos`, MySQL 8.4 en `127.0.0.1:3307`. Usar `docker-compose --context colima-gymos` porque el comando plugin `docker compose` no está configurado en esta computadora. No alterar la instancia MariaDB existente ni otros contextos.
+Crear y verificar el repositorio público `tomimeno0/GYM-OS`. El conector vinculado no tiene operación para crear repositorios, y tanto Chrome como el navegador integrado mostraron GitHub sin sesión iniciada. Se pidió al usuario iniciar sesión en Chrome. No se publicó código ni se subieron adjuntos privados.
 
-Fuentes extraídas y renders en `.local/sources` y `.local/analysis` (ignorados por Git). No volver a buscar las secuencias en la carpeta vacía: están en `GRAFICOS CASOS DE USO.pdf`.
+SMTP y hosting de producción requieren configurar un proveedor y un dominio propios. No son necesarios para ejecutar el sistema localmente: el correo de desarrollo queda en archivos privados. No se inventan credenciales, destinatarios ni una URL pública de despliegue.
+
+## Entorno local
+
+Directorio: `gymOS`. MySQL en `127.0.0.1:3307`, perfil/contexto Docker `colima-gymos`; prefijo local `docker-compose --context colima-gymos`. No alterar MariaDB existente ni otros contextos. Frontend: `http://localhost:5173`; API: puerto 3000.
+
+Fuentes y renders privados en `.local/sources` y `.local/analysis`, excluidos de Git. Las secuencias están en el PDF adjunto `GRAFICOS CASOS DE USO.pdf`; no volver a buscarlas en la carpeta vacía.

@@ -1,0 +1,7 @@
+node_modules
+.local
+client/dist
+api/data
+package-lock.json
+playwright-report
+test-results

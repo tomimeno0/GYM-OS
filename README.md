@@ -1,15 +1,16 @@
 # GYM-OS
 
-Sistema de entrenamiento, nutrición y seguimiento personal con administración de usuarios. JavaScript, React, Express, Sequelize y MySQL. Implementación basada en UML y 39 diagramas de secuencia del proyecto.
+Entrenamiento, nutrición y progreso en un solo lugar. Aplicación en **JavaScript, React, Express, Sequelize y MySQL**, con interfaz adaptable a escritorio y móvil.
 
-**En construcción:** la base de datos y los servicios de cuentas/administración ya tienen pruebas de integración. Los módulos fitness, IA y frontend aún están en desarrollo. No es una entrega final.
+Implementa cuentas, perfil físico e historial, objetivos, rutinas por día, registro de entrenamientos, planes alimentarios, consumo y macros, biblioteca de 1.324 ejercicios y administración de usuarios, roles, bitácora e integridad.
 
-## Requisitos
+**La IA está diferida por decisión del responsable del proyecto.** No hay proveedor configurado, llamadas a LLM, modelos locales ni generación automática. Los cinco casos de uso de IA se conservan documentados para una etapa posterior.
 
-- Node.js 22.12 o superior (desarrollo probado con Node 24).
-- Docker con Compose y MySQL 8.4. En macOS también puede usarse Colima.
+Estado verificable y pendientes de publicación: [Estado de entrega](docs/ESTADO.md). No se considera publicado hasta comprobar el repositorio remoto.
 
-## Preparación
+## Ejecutar localmente
+
+Requisitos: Node.js 22.12 o superior (probado con Node 24), npm y Docker con Compose. MySQL 8.4 usa `127.0.0.1:3307`.
 
 ```sh
 npm ci
@@ -17,30 +18,51 @@ npm run setup
 docker compose up -d mysql
 npm run db:migrate
 npm run db:seed -- --demo
+npm run db:demo
+npm run dev
 ```
 
-`setup` crea `.env` con claves aleatorias y no sobrescribe configuraciones existentes. Los usuarios ficticios son `cliente@gym-os.demo` y `admin@gym-os.demo`; su contraseña es el valor `DEMO_PASSWORD` en tu `.env` local. No subas ese archivo a Git.
+Esperá a que MySQL esté saludable (`docker compose ps`) antes de migrar. `DB_PORT` configura tanto la aplicación como el puerto publicado por Compose, lo que permite mantener instalaciones aisladas. Abrí **http://localhost:5173**; no uses otro origen sin actualizar `APP_ORIGIN`. La API escucha en el puerto 3000. `npm run db:demo` es opcional: agrega información **ficticia**, sin modificar una cuenta que ya tiene mediciones.
 
-MySQL escucha en `127.0.0.1:3307`. El usuario de DB predeterminado es `gymos`; el script inicial crea la base de pruebas `gym_os_test`. Si cambiás `DB_USER`, adaptá también `scripts/mysql-init.sql` antes de inicializar el volumen.
+Las cuentas demo son `cliente@gym-os.demo` y `admin@gym-os.demo`. La contraseña aleatoria de ambas está en `DEMO_PASSWORD` dentro de tu `.env`. `setup` no sobrescribe configuraciones ni secretos existentes. **No compartas ni subas `.env`.**
 
-Para Colima, usá tu contexto Docker: `docker --context colima-gymos compose …`. Si Compose está instalado como ejecutable independiente, `docker-compose --context colima-gymos …` es equivalente.
+En esta computadora con Colima y Compose independiente: `docker-compose --context colima-gymos up -d mysql`. No altera MariaDB ni el contexto Docker predeterminado.
 
-## API y pruebas actuales
+## Verificación
 
 ```sh
-npm start
 npm test
+npm run build
+npx playwright install chromium
+npm run test:e2e
+npm run format:check
 npm audit
 ```
 
-API en `http://localhost:3000/api/v1`, salud en `/api/health`. Las escrituras requieren cabecera `X-GymOS-Client: web`. Sesión mediante cookie HttpOnly. Pruebas de integración usan y reinicializan **sólo `gym_os_test`**; no apuntarlas a una base con datos reales.
+`npm test` reinicializa **exclusivamente `gym_os_test`**. Nunca uses esa base para datos reales. E2E ejecuta el build con API real en el puerto 3100 y MySQL de pruebas; verifica escritorio y móvil, cuentas, fitness, permisos, administración y accesibilidad. No ejecutes ambas suites simultáneamente. GitHub Actions reproduce la verificación en una instancia efímera de MySQL.
 
-En desarrollo, recuperación de contraseña escribe el correo en `.local/mail/` (privado). En producción configurá SMTP y `APP_ORIGIN` HTTPS. Nunca se devuelve el token por la API.
+## Estructura
+
+- `client/`: React, rutas, formularios, gráficos y estilos.
+- `api/`: Express, servicios, Sequelize, migraciones y seguridad.
+- `shared/`: contratos Zod y constantes compartidas.
+- `tests/`: pruebas unitarias, integración con MySQL y recorridos Playwright.
+- `docs/`: requisitos, arquitectura, uso, operación, pruebas y licencias.
+
+## Uso
+
+Creá una cuenta, registrá tus medidas en **Mi progreso**, definí un objetivo y armá tus rutinas. Iniciá una sesión desde una rutina para registrar cada ejercicio. En **Nutrición**, los planes y lo efectivamente consumido son registros separados: guardar un plan no implica haberlo comido. Los valores nutricionales se ingresan por 100 g/ml o por una porción, y se calculan según la cantidad.
+
+La recuperación de contraseña en desarrollo genera un correo privado en `.local/mail/`. No se envía un correo real hasta configurar SMTP. Para una instalación real, creá tu administrador con `npm run admin:create` y variables privadas `ADMIN_EMAIL`, `ADMIN_NAME` y `ADMIN_PASSWORD`, sin usar las cuentas demo. Ver [operación](docs/OPERACION.md).
 
 ## Documentación
 
 - [Requisitos y trazabilidad](docs/REQUISITOS.md)
-- [Arquitectura y frontend](docs/ARQUITECTURA.md)
-- [Estado de implementación](docs/ESTADO.md)
+- [Arquitectura](docs/ARQUITECTURA.md)
+- [Guía de uso](docs/USO.md)
+- [API](docs/API.md)
+- [Instalación, seguridad y respaldo](docs/OPERACION.md)
+- [Pruebas y evidencia](docs/PRUEBAS.md)
+- [Datos y licencias](docs/DATOS-Y-LICENCIAS.md)
 
-Los adjuntos originales se mantienen fuera del repositorio público para preservar datos personales. Los datos de prueba son ficticios.
+Los adjuntos originales, PDFs, DER privado, datos personales, correos y secretos quedan fuera del repositorio. Los textos del catálogo incluyen su atribución MIT; no se distribuyen imágenes o GIF de licencia separada. GYM-OS organiza información; no sustituye orientación profesional.

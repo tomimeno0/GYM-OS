@@ -1,0 +1,12 @@
+{
+  "repository": "https://github.com/hasaneyldrm/exercises-dataset",
+  "commit": "7455efae41b330c265e7cd4b78dfa848e7ce5ebd",
+  "sourceSha256": "656634224b8977b99a6d765470ee123260d4979715eaa4e7c0b7c8bb0d79f93d",
+  "fileSha256": "40a4ffea2d87a69a5b5599cc19f6dea45f430b0dada86f8ec0fbcacdc039cf2b",
+  "count": 1324,
+  "languages": [
+    "es",
+    "en"
+  ],
+  "mediaIncluded": false
+}

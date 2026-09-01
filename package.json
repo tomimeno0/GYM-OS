@@ -7,20 +7,19 @@
     "node": ">=22.12"
   },
   "workspaces": [
-    "api",
     "client",
     "shared"
   ],
   "scripts": {
-    "dev": "concurrently -k -n api,client \"npm run dev -w api\" \"npm run dev -w client\"",
+    "dev": "concurrently -k -n api,client \"node --watch index.js\" \"npm run dev -w client\"",
     "build": "npm run build -w client",
-    "start": "node api/index.js",
+    "start": "node index.js",
     "setup": "node scripts/setup.js",
-    "db:migrate": "node api/db/migrate.js",
-    "db:seed": "node api/db/seed.js",
+    "db:migrate": "node config/migrate.js",
+    "db:seed": "node config/seed.js",
     "check": "npm run format:check && npm run build",
-    "db:demo": "node api/db/demo-fitness.js",
-    "admin:create": "node api/db/create-admin.js",
+    "db:demo": "node config/demo-fitness.js",
+    "admin:create": "node config/create-admin.js",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
@@ -34,6 +33,17 @@
     }
   },
   "dependencies": {
-    "uuid": "11.1.1"
+    "cookie-parser": "1.4.7",
+    "cors": "2.8.6",
+    "dotenv": "17.4.2",
+    "express": "5.2.1",
+    "express-rate-limit": "8.7.0",
+    "helmet": "8.3.0",
+    "luxon": "3.7.2",
+    "mysql2": "3.24.2",
+    "nodemailer": "9.1.0",
+    "sequelize": "6.37.8",
+    "uuid": "11.1.1",
+    "zod": "4.5.4"
   }
 }

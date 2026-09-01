@@ -4,7 +4,7 @@
 
 Fuente: [hasaneyldrm/exercises-dataset](https://github.com/hasaneyldrm/exercises-dataset), revisión `7455efae41b330c265e7cd4b78dfa848e7ce5ebd`.
 
-Se distribuyen los 1.324 registros de texto: nombres, equipo, músculos e instrucciones en español e inglés. El archivo `api/data/exercises/provenance.json` conserva revisión, hash del original, hash del archivo distribuido, idiomas y cantidad. La aplicación verifica el hash local al arrancar. `LICENSE` y `UPSTREAM-NOTICE.md` junto al dataset conservan la licencia y avisos originales.
+Se distribuyen los 1.324 registros de texto: nombres, equipo, músculos e instrucciones en español e inglés. El archivo `models/exercises/provenance.json` conserva revisión, hash del original, hash del archivo distribuido, idiomas y cantidad. La aplicación verifica el hash local al arrancar. `LICENSE` y `UPSTREAM-NOTICE.md` junto al dataset conservan la licencia y avisos originales.
 
 Los datos y textos están bajo MIT. Las imágenes y GIFs son de Gym visual y tienen licencia independiente. **GYM-OS no incluye ni carga esos medios**. Una eventual integración de imágenes exige una licencia válida del titular y su atribución; no basta con clonar el dataset.
 

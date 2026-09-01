@@ -9,7 +9,7 @@ GYM-OS implementa los 39 casos de uso relevados en las 27 secuencias, incluidos 
 - Cuentas, recuperación, perfil, roles/permisos, bloqueo/activación, bitácora, integridad y eliminación de datos personales.
 - Medidas históricas, objetivos, rutinas manuales y por IA, sesiones con cargas reales, planes alimentarios manuales y por IA, consumo, macros y progreso.
 - CU015, CU019, CU023, CU026 y CU031 mediante Cohere por API: consentimiento explícito revocable, contexto mínimo, validación estructurada y de seguridad, persistencia transaccional, historial de chat, negativa fuera de alcance y errores seguros. No usa modelos locales.
-- Clases de dominio con los nombres literales de métodos del UML, incluidos `definirObjeto`, `visuaizarObjetivo` y `encriptarRreversible`; los servicios ejecutan esas operaciones.
+- Clases de dominio con los nombres literales de métodos del UML, incluidos `definirObjeto`, `visuaizarObjetivo` y `encriptarRreversible`; los controladores ejecutan esas operaciones.
 - Catálogo textual completo de 1.324 ejercicios con atribución MIT, sin imágenes/GIF con licencia separada.
 - Frontend adaptable para todos los módulos, incluido Asistente IA, y administración completa.
 

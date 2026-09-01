@@ -40,8 +40,12 @@ GitHub Actions comprueba formato, compilación y dependencias en cada publicaci�
 
 ## Estructura
 
+- `index.js`: entrada del servidor Express y montaje de rutas.
+- `config/`: conexión MySQL, esquema, migraciones y carga inicial.
+- `controllers/`: lógica de cuentas, fitness, nutrición, administración e IA.
+- `models/`: modelos Sequelize, asociaciones, clases UML y catálogo de ejercicios.
+- `routes/`: definición de endpoints y vinculación con controladores.
 - `client/`: React, rutas, formularios, gráficos y estilos.
-- `api/`: Express, servicios, Sequelize, migraciones y seguridad.
 - `shared/`: contratos Zod y constantes compartidas.
 - `docs/`: requisitos, arquitectura, uso, operación y licencias.
 

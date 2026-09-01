@@ -2,11 +2,11 @@
 
 ## Organización
 
-Monorepositorio npm workspaces: `api/` (Express, Sequelize, MySQL), `client/` (React, Vite, React Router), `shared/` (validaciones y constantes de dominio), `docs/` y `scripts/`.
+El backend sigue la estructura entregada en `REPASO COMPLETO.rar`: `index.js` en la raíz y las carpetas `config/`, `controllers/`, `models/` y `routes/`. `client/` contiene React y Vite; `shared/` contiene validaciones y constantes usadas por frontend y backend. `docs/` y `scripts/` completan la entrega sin introducir otra capa de backend.
 
-La base de los adjuntos se conserva como estructura, no como funcionalidad ficticia: se reemplazan los arrays/mock de usuarios, CORS abierto y rutas de ejemplo por servicios persistentes. La navegación conserva Inicio `/`, Dashboard `/dashboard`, Nosotros `/nosotros` y Mi perfil `/me`. Se añaden `/objetivos`, `/rutinas`, `/rutinas/:id`, `/entrenamientos/:id`, `/nutricion`, `/dietas/:id`, `/progreso`, `/ejercicios`, `/admin/usuarios`, `/asistente`, `/admin/roles`, `/admin/bitacora` y `/admin/integridad`. `/acerca` y `/contacto` son alias a Nosotros.
+La estructura del repaso se utiliza como patrón MVC, mientras que sus usuarios, hobbies, PostgreSQL y `sync({force:true})` son ejemplos del ejercicio y no requisitos de GYM-OS. La implementación conserva MySQL, las migraciones seguras y el dominio definido por UML y secuencias. La navegación incluye Inicio `/`, Dashboard `/dashboard`, Nosotros `/nosotros`, Mi perfil `/me`, `/objetivos`, `/rutinas`, `/rutinas/:id`, `/entrenamientos/:id`, `/nutricion`, `/dietas/:id`, `/progreso`, `/ejercicios`, `/admin/usuarios`, `/asistente`, `/admin/roles`, `/admin/bitacora` y `/admin/integridad`. `/acerca` y `/contacto` son alias a Nosotros.
 
-Flujo: router -> autenticación/permiso -> controlador -> servicio de dominio -> modelos Sequelize -> MySQL. La interfaz consume `/api/v1`; no accede directamente a DB, SMTP ni IA. Los servicios exponen operaciones equivalentes a las clases UML (Usuario/Cliente/PerfilFisico/Objetivo/Rutina/Dieta/Comida/RegistroEntrenamiento/Progreso/Seguridad/Administrador/IA).
+Flujo: `routes` -> autenticación/permiso -> `controllers` -> `models` Sequelize -> MySQL. La interfaz consume `/api/v1`; no accede directamente a DB, SMTP ni IA. Los controladores ejecutan las operaciones equivalentes a las clases UML (Usuario/Cliente/PerfilFisico/Objetivo/Rutina/Dieta/Comida/RegistroEntrenamiento/Progreso/Seguridad/Administrador/IA).
 
 ## Persistencia y seguridad
 

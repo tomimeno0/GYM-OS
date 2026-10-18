@@ -6,7 +6,7 @@ Guía del **GYM-OS completo**. Reparto por funcionalidades para estudiar y revis
 
 El plan de alimentación: comidas por horario, alimentos y cantidades, objetivos nutricionales, detalle, edición y baja. Planificar una dieta es una funcionalidad distinta de registrar lo que efectivamente se comió.
 
-**Casos de uso:** CU022, CU024, CU025, CU027 y CU028; generación/adaptación IA con Joaquín. **Pantallas:** `/dietas, /dietas/nueva, /dietas/:id y /dietas/:id/editar`.
+**Casos de uso:** CU022, CU024, CU025, CU027 y CU028; generación/adaptación IA con Tomás. **Pantallas:** `/dietas, /dietas/nueva, /dietas/:id y /dietas/:id/editar`.
 
 ## Archivos que tenés que abrir
 
@@ -49,11 +49,11 @@ dietas contiene propietario, objetivo opcional, metas diarias, origen, estado y 
 
 Todas estas rutas usan el prefijo `/api/v1`. Las mutaciones del navegador envían `X-GymOS-Client: web` y el origen configurado; las privadas requieren cookie válida.
 
-| Método         | Ruta                                       | Resultado o condición                  |
-| -------------- | ------------------------------------------ | -------------------------------------- |
-| GET/POST       | `/diets`                                   | Listar y crear                         |
-| GET/PUT/DELETE | `/diets/:id`                               | Consultar, reemplazar y dar de baja    |
-| POST           | `/ai/diets/generate o /ai/diets/:id/adapt` | Operaciones IA coordinadas con Joaquín |
+| Método         | Ruta                                       | Resultado o condición                |
+| -------------- | ------------------------------------------ | ------------------------------------ |
+| GET/POST       | `/diets`                                   | Listar y crear                       |
+| GET/PUT/DELETE | `/diets/:id`                               | Consultar, reemplazar y dar de baja  |
+| POST           | `/ai/diets/generate o /ai/diets/:id/adapt` | Operaciones IA coordinadas con Tomás |
 
 ## Recorrido que tenés que explicar sin leer
 
@@ -86,7 +86,7 @@ Los errores de validación usan 400; falta de sesión 401; permiso/consentimient
 
 ## Límite con los otros integrantes
 
-Mateo comparte FoodEditor y cálculo de macros, pero es dueño del consumo real y consulta de alimentos. Paulo ofrece objetivos; Joaquín genera/adapta dietas; vos defendés el plan y su persistencia.
+Mateo comparte FoodEditor y cálculo de macros, pero es dueño del consumo real y consulta de alimentos. Paulo ofrece objetivos; Tomás genera/adapta dietas; vos defendés el plan y su persistencia.
 
 ## Preparación para exponer
 

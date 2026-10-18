@@ -85,7 +85,7 @@ Los errores de validación usan 400; falta de sesión 401; permiso/consentimient
 
 ## Límite con los otros integrantes
 
-Gade registra medidas y muestra la evolución general. Vos definís la meta y sus reglas; Tomás y Valentín la asocian a planes. Iván aporta actividad real para metas de distancia o frecuencia.
+Gade registra medidas y muestra la evolución general. Vos definís la meta y sus reglas; Joaquín y Valentín la asocian a planes. Iván aporta actividad real para metas de distancia o frecuencia.
 
 ## Preparación para exponer
 

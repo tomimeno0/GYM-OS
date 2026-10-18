@@ -87,7 +87,7 @@ Los errores de validación usan 400; falta de sesión 401; permiso/consentimient
 
 ## Límite con los otros integrantes
 
-Valentín planifica alimentos; vos registrás consumo. Gade muestra resumen en el panel. Open Food Facts es consulta externa, no IA; Joaquín maneja Cohere.
+Valentín planifica alimentos; vos registrás consumo. Gade muestra resumen en el panel. Open Food Facts es consulta externa, no IA; Tomás maneja Cohere.
 
 ## Preparación para exponer
 

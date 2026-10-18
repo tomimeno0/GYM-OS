@@ -96,7 +96,7 @@ Los errores de validación usan 400; falta de sesión 401; permiso/consentimient
 
 ## Límite con los otros integrantes
 
-Simón administra cuentas de terceros y roles; vos manejás la cuenta propia. Gade gestiona medidas corporales; no son campos del perfil personal. Joaquín consume el consentimiento que se cambia en tu pantalla.
+Simón administra cuentas de terceros y roles; vos manejás la cuenta propia. Gade gestiona medidas corporales; no son campos del perfil personal. Tomás consume el consentimiento que se cambia en tu pantalla.
 
 ## Preparación para exponer
 

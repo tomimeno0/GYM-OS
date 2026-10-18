@@ -5,13 +5,13 @@ Un documento por persona y una funcionalidad completa por documento. Estas guía
 | Integrante         | Funcionalidad                            | Guía                              |
 | ------------------ | ---------------------------------------- | --------------------------------- |
 | Gianluca Pizarro   | Cuentas y acceso                         | [Abrir](01-gianluca-pizarro.md)   |
-| Tomás Minossi      | Rutinas y catálogo de ejercicios         | [Abrir](02-tomas-minossi.md)      |
+| Joaquín Casanou    | Rutinas y catálogo de ejercicios         | [Abrir](08-joaquin-casanou.md)    |
 | Iván Lerner        | Entrenamientos e historial de sesiones   | [Abrir](03-ivan-lerner.md)        |
 | Paulo López        | Objetivos personales                     | [Abrir](04-paulo-lopez.md)        |
 | Gade Silva y Lápiz | Perfil físico, progreso y panel          | [Abrir](05-gade-silva-y-lapiz.md) |
 | Valentín Schueld   | Dietas y planificación alimentaria       | [Abrir](06-valentin-schueld.md)   |
 | Mateo Romani       | Registro alimentario, alimentos y macros | [Abrir](07-mateo-romani.md)       |
-| Joaquín Casanou    | Asistente de IA y planes generados       | [Abrir](08-joaquin-casanou.md)    |
+| Tomás Menossi      | Asistente de IA y planes generados       | [Abrir](02-tomas-menossi.md)      |
 | Simón Castellani   | Administración del sistema               | [Abrir](09-simon-castellani.md)   |
 
 ## Qué deben entender todos

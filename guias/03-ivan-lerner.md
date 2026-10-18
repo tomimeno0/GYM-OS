@@ -81,7 +81,7 @@ Los errores de validación usan 400; falta de sesión 401; permiso/consentimient
 
 ## Límite con los otros integrantes
 
-Tomás proporciona la rutina y el catálogo; Gade usa las sesiones completadas en progreso/panel; Paulo utiliza distancia o frecuencia en ciertos objetivos. Tu módulo no decide los porcentajes de objetivo.
+Joaquín proporciona la rutina y el catálogo; Gade usa las sesiones completadas en progreso/panel; Paulo utiliza distancia o frecuencia en ciertos objetivos. Tu módulo no decide los porcentajes de objetivo.
 
 ## Preparación para exponer
 

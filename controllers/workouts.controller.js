@@ -98,10 +98,10 @@ const saveWorkoutImpl = (userId, id, data) =>
   writeFitness(userId, 'CU021_REGISTRAR_ENTRENAMIENTO', 'entrenamientos', async (transaction) => {
     const workout = await owned(Workouts, id, userId, transaction);
     assert(
-      workout.estado === 'iniciado' || workout.estado === data.estado,
+      workout.estado === 'iniciado',
       409,
       'WORKOUT_FINISHED',
-      'Un entrenamiento finalizado no puede reabrirse ni cambiar de estado.',
+      'Un entrenamiento finalizado no puede modificarse ni reabrirse.',
     );
     const entries = await Entries.findAll({ where: { entrenamiento_id: id }, transaction });
     const provided = new Set(data.ejercicios.map((e) => e.id));

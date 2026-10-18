@@ -57,13 +57,14 @@ export function normalizeExercises(exercises) {
   });
 }
 export async function persistRoutine(userId, data, id, transaction, generation = 'manual') {
-  await validateGoalLink(data.objetivo_id, userId, transaction);
   const ejercicios = normalizeExercises(data.ejercicios);
   const { ejercicios: ignored, ...fields } = data;
   let routine;
   if (id) {
     routine = await owned(Routines, id, userId, transaction);
     requireActive(routine);
+    if (data.objetivo_id && data.objetivo_id !== routine.objetivo_id)
+      await validateGoalLink(data.objetivo_id, userId, transaction);
     await routine.update(
       {
         ...fields,
@@ -76,7 +77,8 @@ export async function persistRoutine(userId, data, id, transaction, generation =
       {},
       { eliminarEjercicio: () => Exercises.destroy({ where: { rutina_id: id }, transaction }) },
     ).eliminarEjercicio();
-  } else
+  } else {
+    await validateGoalLink(data.objetivo_id, userId, transaction);
     routine = await Routines.create(
       {
         ...fields,
@@ -87,6 +89,7 @@ export async function persistRoutine(userId, data, id, transaction, generation =
       },
       { transaction },
     );
+  }
   const umlExercises = ejercicios.map((exercise) =>
     new Rutina(
       {},

@@ -55,6 +55,12 @@ Creá una cuenta, registrá tus medidas en **Mi progreso**, definí un objetivo 
 
 La recuperación de contraseña en desarrollo genera un correo privado en `.local/mail/`. No se envía un correo real hasta configurar SMTP. Para una instalación real, creá tu administrador con `npm run admin:create` y variables privadas `ADMIN_EMAIL`, `ADMIN_NAME` y `ADMIN_PASSWORD`, sin usar las cuentas demo. Ver [operación](docs/OPERACION.md).
 
+## Equipo y preparación de la defensa
+
+El sistema completo se reparte entre nueve integrantes por funcionalidades completas. El [reparto general](REPARTO.md) y las [nueve guías individuales](guias/README.md) explican pantallas, funciones, datos, errores y demostraciones para cada uno. No se fraccionan login, validación y cookies entre varias personas.
+
+La [revisión del 18/10/2026](docs/REVISION-FINAL.md) documenta fallas corregidas, comprobaciones y límites de lo verificado.
+
 ## Documentación
 
 - [Requisitos y trazabilidad](docs/REQUISITOS.md)

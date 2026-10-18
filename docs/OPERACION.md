@@ -31,7 +31,7 @@ Las migraciones son versionadas e idempotentes. La segunda añade valores inicia
 | `AI_MOCK`                                                                          | Diagnóstico local determinista; nunca activar en producción                     |
 | `AI_TIMEOUT_MS`                                                                    | Timeout por intento contra Cohere; 60000 ms por defecto                         |
 
-La integración IA realiza llamadas HTTPS a Cohere únicamente después del consentimiento del usuario. La clave no se devuelve en estado, logs ni errores. Las respuestas estructuradas se validan con Zod y límites de seguridad antes de iniciar la transacción; un fallo, timeout, JSON inválido o plan inseguro no guarda cambios parciales. Solo se reintentan una vez los timeouts, `429` y errores `5xx`; los errores de contrato no se ocultan. `AI_MOCK=true` se reserva para diagnósticos locales deterministas.
+La integración IA realiza llamadas HTTPS a Cohere únicamente después del consentimiento del usuario. La clave no se devuelve en estado, logs ni errores. Las respuestas estructuradas se validan con Zod y límites de seguridad antes de iniciar la transacción; un fallo, timeout, JSON inválido o plan inseguro no guarda cambios parciales. Solo se reintentan una vez los timeouts, `429` y errores `5xx`; los errores de contrato no se ocultan. `AI_MOCK=true` se reserva para diagnósticos locales deterministas. El arranque en producción rechaza expresamente este modo y la interfaz de diagnóstico lo identifica como simulación.
 
 ## Despliegue real
 

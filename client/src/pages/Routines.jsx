@@ -343,12 +343,17 @@ function RoutineForm({ initial }) {
               onChange={(e) => setF({ ...f, objetivo_id: e.target.value || null })}
             >
               <option value="">Sin objetivo asociado</option>
+              {f.objetivo_id &&
+                goals.data &&
+                !goals.data.items.some((g) => g.id === f.objetivo_id) && (
+                  <option value={f.objetivo_id}>Objetivo histórico asociado</option>
+                )}
               {goals.data?.items
                 .filter((g) => g.estado === 'activo' || g.id === f.objetivo_id)
                 .map((g) => (
                   <option key={g.id} value={g.id}>
                     {g.nombre}
-                    {g.estado !== 'activo' ? ' (completado; desvincular para editar)' : ''}
+                    {g.estado !== 'activo' ? ' (completado)' : ''}
                   </option>
                 ))}
             </Select>

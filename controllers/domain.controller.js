@@ -31,6 +31,13 @@ export const readFitness = (userId, work) =>
 export const writeFitness = (userId, action, module, work) =>
   atomic(async (transaction) => {
     const user = await authorizeActor(userId, 'fitness:use', transaction);
+    if (module === 'ia')
+      assert(
+        user.consentimiento_ia === true,
+        403,
+        'AI_CONSENT_REQUIRED',
+        'El consentimiento de IA fue revocado. No se guardó ningún cambio.',
+      );
     const result = await work(transaction, user);
     await audit(transaction, userId, action, module);
     return dto(result);

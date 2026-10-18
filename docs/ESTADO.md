@@ -15,11 +15,19 @@ GYM-OS implementa los 39 casos de uso relevados en las 27 secuencias, incluidos 
 
 ## Validación
 
-El repositorio comprueba formato, compilación de producción y vulnerabilidades conocidas de las dependencias. Las suites automatizadas y su documentación se retiraron por decisión del propietario el 31/08/2026.
+La revisión del 18/10/2026 está en [REVISION-FINAL.md](REVISION-FINAL.md). Se comprobaron 126 recorridos/aserciones funcionales en una instancia MySQL aislada y 10 regresiones adicionales, además de pruebas puntuales de consentimiento revocado, bloqueo del modo simulado en producción y construcción local de correo. Se corrigieron problemas del historial deportivo, edición de planes vinculados a metas históricas, consentimiento y estado de formularios/chat.
+
+Se ejecutaron formato, compilación y auditoría de dependencias: sin avisos conocidos al momento de la revisión. Se revisaron visualmente recorridos de escritorio y móvil con cuentas ficticias. Cohere se simuló, SMTP no se envió por red y no se certificó un despliegue productivo ni todos los navegadores.
+
+No se reintrodujeron suites de tests versionadas, retiradas previamente por decisión del propietario. Los scripts y datos de auditoría permanecen privados en .local/analysis; los resultados y límites se documentan sin publicar credenciales.
 
 Las capturas de escritorio y móvil usan cuentas ficticias y permanecen en `docs/screenshots/` como referencia visual del producto.
 
 El archivo `.env` está ignorado y la clave de Cohere no se incluye en Git, documentación, capturas ni respuestas de la API. Antes de publicar se escanean los archivos versionados y el diff por patrones de secretos.
+
+## Equipo
+
+El [reparto funcional](../REPARTO.md) asigna nueve áreas completas del producto y enlaza [guías individuales](../guias/README.md). Las asignaciones son responsabilidades de preparación/revisión y no una afirmación de autoría.
 
 ## Publicación
 

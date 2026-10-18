@@ -108,10 +108,12 @@ function Chat({ enabled }) {
   const [mode, setMode] = useState('entrenador');
   const [question, setQuestion] = useState('');
   const action = useAction();
-  async function open(id) {
-    action.setError(null);
-    setConversation(await api(`/ai/conversations/${id}`));
-    setMode(conversations.data.items.find((item) => item.id === id)?.modo || 'entrenador');
+  function open(id) {
+    return action.run(async () => {
+      const value = await api(`/ai/conversations/${id}`);
+      setConversation(value);
+      setMode(value.modo);
+    });
   }
   return (
     <section className="card ai-chat">
@@ -122,6 +124,7 @@ function Chat({ enabled }) {
         </div>
         <Button
           variant="secondary"
+          disabled={action.busy}
           onClick={() => {
             setConversation(null);
             setQuestion('');
@@ -140,6 +143,7 @@ function Chat({ enabled }) {
                 data.items.map((item) => (
                   <button
                     key={item.id}
+                    disabled={action.busy}
                     className={conversation?.id === item.id ? 'active' : ''}
                     onClick={() => open(item.id)}
                   >
@@ -190,7 +194,7 @@ function Chat({ enabled }) {
             <Select
               label="Modo"
               value={mode}
-              disabled={!enabled || Boolean(conversation)}
+              disabled={!enabled || action.busy || Boolean(conversation)}
               onChange={(e) => setMode(e.target.value)}
             >
               <option value="entrenador">Entrenador</option>
@@ -202,7 +206,7 @@ function Chat({ enabled }) {
               minLength={1}
               maxLength={2000}
               value={question}
-              disabled={!enabled}
+              disabled={!enabled || action.busy}
               onChange={(e) => setQuestion(e.target.value)}
             />
             <Feedback {...action} />
@@ -232,10 +236,19 @@ export default function Assistant() {
       >
         {status.data && (
           <Badge tone={status.data.disponible ? 'green' : ''}>
-            {status.data.disponible ? 'DISPONIBLE' : 'NO DISPONIBLE'}
+            {status.data.modo_prueba
+              ? 'SIMULACIÓN DE PRUEBA'
+              : status.data.disponible
+                ? 'DISPONIBLE'
+                : 'NO DISPONIBLE'}
           </Badge>
         )}
       </PageTitle>
+      {status.data?.modo_prueba && (
+        <div className="notice" role="status">
+          Esta instancia usa respuestas simuladas para diagnóstico. No está consultando Cohere.
+        </div>
+      )}
       <Resource resource={status}>
         {(state) =>
           !state.disponible && (
@@ -248,8 +261,10 @@ export default function Assistant() {
       </Resource>
       {!user.consentimiento_ia && (
         <div className="notice" role="status">
-          Para usar la IA, primero leé y activá el consentimiento en <Link to="/me">tu perfil</Link>
-          . Las funciones manuales no comparten datos con Cohere.
+          <span>
+            Para usar la IA, primero leé y activá el consentimiento en{' '}
+            <Link to="/me">tu perfil</Link>. Las funciones manuales no comparten datos con Cohere.
+          </span>
         </div>
       )}
       <div className="ai-tools">

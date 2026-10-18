@@ -74,7 +74,6 @@ export const listDiets = (userId) =>
     return { items };
   });
 export async function persistDiet(userId, data, id, transaction, generation = 'manual') {
-  await validateGoalLink(data.objetivo_id, userId, transaction);
   const { comidas, ...fields } = data;
   const prepared = comidas.map((meal) =>
     new Comida(
@@ -93,6 +92,8 @@ export async function persistDiet(userId, data, id, transaction, generation = 'm
   if (id) {
     diet = await owned(Diets, id, userId, transaction);
     requireActive(diet);
+    if (data.objetivo_id && data.objetivo_id !== diet.objetivo_id)
+      await validateGoalLink(data.objetivo_id, userId, transaction);
     await diet.update(
       {
         ...fields,
@@ -102,7 +103,8 @@ export async function persistDiet(userId, data, id, transaction, generation = 'm
       { transaction },
     );
     await Meals.destroy({ where: { dieta_id: id }, transaction });
-  } else
+  } else {
+    await validateGoalLink(data.objetivo_id, userId, transaction);
     diet = await Diets.create(
       {
         ...fields,
@@ -113,6 +115,7 @@ export async function persistDiet(userId, data, id, transaction, generation = 'm
       },
       { transaction },
     );
+  }
   await Meals.bulkCreate(
     prepared.map((m) => ({ ...m, dieta_id: diet.id })),
     { transaction },

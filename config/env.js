@@ -38,3 +38,5 @@ export const env = {
 };
 if (env.nodeEnv === 'production' && !env.origin.startsWith('https://'))
   throw new Error('Producción requiere APP_ORIGIN con HTTPS.');
+if (env.nodeEnv === 'production' && env.ai.mock)
+  throw new Error('Producción no permite AI_MOCK. Configurá el proveedor real.');

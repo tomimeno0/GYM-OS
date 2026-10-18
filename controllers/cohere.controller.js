@@ -26,6 +26,10 @@ export async function cohereChat(messages, schema) {
           model: env.ai.model,
           messages,
           temperature: 0.2,
+          max_tokens: 8000,
+          ...(/^command-a-(plus|reasoning)-/.test(env.ai.model)
+            ? { thinking: { type: 'disabled' } }
+            : {}),
           ...(schema ? { response_format: { type: 'json_object', schema } } : {}),
         }),
       });
@@ -41,13 +45,19 @@ export async function cohereChat(messages, schema) {
         );
       }
       const payload = await response.json();
-      const text = payload?.message?.content?.find((part) => part.type === 'text')?.text;
-      if (!text)
+      const text = (payload?.message?.content || [])
+        .filter((part) => part.type === 'text' && typeof part.text === 'string')
+        .map((part) => part.text)
+        .join('')
+        .trim();
+      if (!text || payload.finish_reason === 'MAX_TOKENS') {
+        if (!text && attempt === 0) continue;
         throw new AppError(
           503,
           'AI_INVALID_RESPONSE',
-          'El asistente devolvió una respuesta vacía.',
+          'El asistente devolvió una respuesta vacía o incompleta. Intentá nuevamente.',
         );
+      }
       return text;
     } catch (error) {
       if (error instanceof AppError) throw error;

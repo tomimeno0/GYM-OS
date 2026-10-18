@@ -31,7 +31,7 @@ export const env = {
   ai: {
     provider: process.env.AI_PROVIDER || 'cohere',
     apiKey: process.env.COHERE_API_KEY || '',
-    model: process.env.COHERE_MODEL || 'command-a-plus-05-2026',
+    model: process.env.COHERE_MODEL || 'command-a-03-2025',
     mock: process.env.AI_MOCK === 'true',
     timeoutMs: Number(process.env.AI_TIMEOUT_MS || 60000),
   },

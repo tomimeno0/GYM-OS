@@ -50,9 +50,21 @@ Capturas con datos ficticios:
 - [Administración e integridad](revision-2026-10-18/admin-integridad-desktop.png).
 - [Asistente en modo de prueba](revision-2026-10-18/asistente-prueba-desktop.png).
 
+## Conexión posterior con Cohere real
+
+El mismo 18/10/2026, después de iniciar sesión en Cohere, se comprobó que la clave GYM-OS existente coincidía con la configuración privada y seguía siendo válida. No se creó otra clave ni se activó facturación. Se mantuvo `.env` fuera de Git, con permisos 0600, y `AI_MOCK=false`.
+
+Las llamadas reales detectaron respuestas vacías y contenido fuera del JSON solicitado con el modelo anterior. Se cambió el modelo predeterminado a `command-a-03-2025`, se hizo explícito el contrato JSON del chat y se representó su historial de respuestas con ese formato. El chat valida ambos campos antes de guardar y permite repetir una generación inválida una sola vez. El adaptador reúne únicamente bloques de texto, limita salida y rechaza respuestas truncadas; no intenta rescatar JSON de bloques internos ni los publica.
+
+Tras las correcciones pasaron 19 solicitudes HTTP del recorrido: registro de cuenta ficticia, rechazo sin consentimiento, activación, medidas, objetivo, disponibilidad real, chat inicial y continuación, soporte, creación y adaptación de rutina, sesión deportiva, creación y adaptación de dieta y relectura del historial/planes desde MySQL. Se comprobó por separado la integridad de la base. Otras cuatro solicitudes verificaron negativa fuera de alcance, revocación, rechazo posterior y restauración del consentimiento. Ocho regresiones simuladas del adaptador y el chat comprobaron errores 401/503, respuesta vacía transitoria y persistente, salida truncada bloques de texto múltiples, recuperación de JSON inválido y rechazo de un contrato incorrecto sin guardar conversaciones parciales. Estas últimas no se cuentan como llamadas reales a Cohere.
+
+En Chrome se inició sesión con la cuenta ficticia y se envió una consulta desde React. La respuesta real se mostró correctamente y el historial permitió volver a verla. [Captura de la consulta real](revision-2026-10-18/asistente-cohere-real.png). Las pruebas usaron datos inventados y no verifican calidad profesional de consejos, ausencia de errores futuros ni disponibilidad continua. Las comprobaciones históricas anteriores mantienen su alcance y no se vuelven a etiquetar como pruebas reales.
+
+Referencias del contrato: [Command A](https://docs.cohere.com/docs/command-a), [salida JSON](https://docs.cohere.com/docs/structured-outputs) y [modelos híbridos](https://docs.cohere.com/v2/docs/reasoning).
+
 ## Qué sigue sin estar certificado
 
-1. **Cohere real:** se probó contrato, persistencia, errores y límites con respuestas simuladas. No se consumió la API key ni se enviaron datos personales al proveedor. No se verificaron cuota, modelo contratado, calidad de generación o latencia real. Antes de entregar una demostración de IA real, revisar la configuración privada y probar con datos ficticios y consentimiento.
+1. **Cohere a largo plazo:** la conexión real y los cinco casos IA se verificaron posteriormente como se describe arriba. La clave sigue siendo de prueba, sujeta a cuota; no se certifican uso comercial, disponibilidad futura, precisión profesional de los planes ni carga concurrente. La clave se había compartido antes en el chat: conviene reemplazarla antes de una exposición pública o despliegue.
 2. **SMTP real:** recuperación se comprobó con correo privado de desarrollo y construcción local de mensaje, no con entrega a un buzón externo.
 3. **Open Food Facts en vivo:** se revisaron normalización y tratamiento de información incompleta, y se probó ingreso manual. Esta revisión no certifica disponibilidad ni exactitud del catálogo externo en la fecha de exposición.
 4. **Escala y producción:** no se hicieron pruebas de carga, despliegue HTTPS público, recuperación de desastre ni auditoría de penetración completa. Las firmas de todas las tablas y el mutex global pueden volverse costosos al crecer el volumen; esta limitación sigue vigente.

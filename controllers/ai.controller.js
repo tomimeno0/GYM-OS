@@ -118,6 +118,31 @@ export const chatJsonSchema = {
   properties: { relacionado: { type: 'boolean' }, respuesta: { type: 'string' } },
 };
 
+async function structuredChat(messages) {
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const answer = JSON.parse(await cohereChat(messages, chatJsonSchema));
+      assert(
+        typeof answer.relacionado === 'boolean' &&
+          typeof answer.respuesta === 'string' &&
+          answer.respuesta.trim(),
+        503,
+        'AI_INVALID_RESPONSE',
+        'El asistente devolvió una respuesta inválida. Intentá nuevamente.',
+      );
+      return answer;
+    } catch (error) {
+      if (error instanceof AppError && error.code !== 'AI_INVALID_RESPONSE') throw error;
+      if (attempt === 1)
+        throw new AppError(
+          503,
+          'AI_INVALID_RESPONSE',
+          'El asistente devolvió una respuesta inválida. Intentá nuevamente.',
+        );
+    }
+  }
+}
+
 function parseJson(text, schema, objectiveId) {
   try {
     return schema.parse({
@@ -542,9 +567,13 @@ export const chat = (userId, input) =>
                   'CONVERSATION_MODE',
                   'El modo no coincide con la conversación.',
                 );
-                previous = conversation.mensajes
-                  .slice(-10)
-                  .map((m) => ({ role: m.rol, content: m.contenido }));
+                previous = conversation.mensajes.slice(-10).map((m) => ({
+                  role: m.rol,
+                  content:
+                    m.rol === 'assistant'
+                      ? JSON.stringify({ relacionado: true, respuesta: m.contenido })
+                      : m.contenido,
+                }));
               }
               let answer;
               try {
@@ -554,19 +583,14 @@ export const chat = (userId, input) =>
                       respuesta:
                         'Puedo ayudarte con entrenamiento, nutrición orientativa y el uso de GYM-OS.',
                     }
-                  : JSON.parse(
-                      await cohereChat(
-                        [
-                          {
-                            role: 'system',
-                            content: `Respondé en español como ${input.modo === 'soporte' ? 'soporte de GYM-OS' : 'entrenador físico general'}. Indicá relacionado=false si la consulta no trata sobre GYM-OS, ejercicio, hábitos o nutrición general. No des diagnósticos médicos.`,
-                          },
-                          ...previous,
-                          { role: 'user', content: input.consulta },
-                        ],
-                        chatJsonSchema,
-                      ),
-                    );
+                  : await structuredChat([
+                      {
+                        role: 'system',
+                        content: `Respondé en español como ${input.modo === 'soporte' ? 'soporte de GYM-OS' : 'entrenador físico general'}. Devolvé únicamente un objeto JSON con relacionado y respuesta. Indicá relacionado=false si la consulta no trata sobre GYM-OS, ejercicio, hábitos o nutrición general. No des diagnósticos médicos.`,
+                      },
+                      ...previous,
+                      { role: 'user', content: input.consulta },
+                    ]);
               } catch (error) {
                 if (error instanceof AppError) throw error;
                 throw new AppError(

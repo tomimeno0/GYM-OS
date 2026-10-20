@@ -2,6 +2,34 @@
 
 Guía del **GYM-OS completo**. Reparto por funcionalidades para estudiar y revisar; no acredita autoría ni cambios que todavía no realizó cada integrante.
 
+## Mapa visual para ubicarte
+
+Tu bloque une la carga corporal con su lectura visual. El panel agrega resultados de otros módulos sin inventar registros ni convertir el resumen en una tabla nueva.
+
+```mermaid
+flowchart TD
+    A["👤 Usuario<br/>Carga medidas o consulta evolución"]
+    B["🖥️ Fitness.jsx<br/>MeasurementForm / Progress / Dashboard"]
+    C{"¿Carga o consulta?"}
+    D["🚪 POST /api/v1/measurements/initial<br/>o POST /api/v1/measurements<br/>measurementSchema valida rangos"]
+    E["🧭 addMeasurement()<br/>updatePhysicalFields() + notFuture()<br/>Inicial única o medición posterior"]
+    F[("💾 MySQL · Sequelize<br/>mediciones_fisicas<br/>Nueva fila con bitácora e integridad")]
+    G["🚪 GET /api/v1/progress<br/>o GET /api/v1/dashboard<br/>Lectura autorizada"]
+    H["📊 getProgress() / progressData()<br/>Inicial, actual, variación y sesiones<br/>El panel también reúne nutrición y rutinas"]
+    I[("💾 Datos propios de otros módulos<br/>Objetivos, entrenamientos<br/>rutinas y consumo nutricional")]
+    J["📈 WeightChart() + tarjetas<br/>Recharts dibuja el período<br/>Si faltan datos, muestra estado vacío"]
+    X["⛔ Error controlado<br/>Fecha futura, rangos<br/>o sesión no autorizada"]
+    A --> B --> C
+    C -->|Carga| D --> E --> F
+    C -->|Consulta| G --> H --> J
+    F -->|Mediciones históricas| H
+    I -->|Resultados de cada módulo| H
+    D -->|Formato inválido| X
+    E -->|Regla incumplida| X
+```
+
+El perfil corporal actual es la última medición; el progreso compara registros. Paulo define las metas, Iván las sesiones y Mateo el consumo; el panel presenta sus resultados.
+
 ## Tu funcionalidad completa
 
 Registrar el punto de partida corporal, agregar mediciones históricas y mostrar la evolución junto con el resumen del día. Incluye el panel que integra datos de los demás módulos; no incluye definir la meta, que corresponde a Paulo.

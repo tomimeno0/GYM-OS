@@ -2,6 +2,38 @@
 
 Guía del **GYM-OS completo**. Reparto por funcionalidades para estudiar y revisar; no acredita autoría ni cambios que todavía no realizó cada integrante.
 
+## Mapa visual para ubicarte
+
+La cuenta propia tiene un ciclo completo: alta, acceso, recuperación, actualización y salida. El panel de terceros y los roles pertenecen a Simón.
+
+```mermaid
+flowchart TD
+    A["👤 Usuario<br/>Auth.jsx / Account.jsx"]
+    B["🚪 accounts.routes.js<br/>Registro, login, recuperación y /me<br/>Zod valida datos"]
+    C{"¿Qué operación realiza?"}
+    D["🔐 register() / login()<br/>Hash de contraseña + cuenta activa<br/>Crea sesión y cookie HttpOnly"]
+    E["📨 requestRecovery() → sendRecovery()<br/>Token temporal de un solo uso<br/>SMTP configurado o archivo local"]
+    F["🔄 resetPassword()<br/>Verifica enlace, cambia hash<br/>y revoca sesiones"]
+    G["✏️ updateProfile()<br/>Campos permitidos y consentimiento IA<br/>encrypt() cifra teléfono"]
+    H["🗑️ deleteAccount() → deleteUserData()<br/>Contraseña y confirmación<br/>Borra dependencias y protege último admin"]
+    I[("💾 MySQL · Sequelize<br/>usuarios, sesiones, recuperaciones<br/>usuario_roles, roles y bitacora")]
+    J["🖥️ publicUser() + AuthProvider<br/>Actualiza cuenta y navegación<br/>Sin hashes ni claves al navegador"]
+    K["🚪 logout()<br/>Revoca sesión y borra cookie"]
+    X["⛔ Rechazo controlado<br/>Credenciales, token, campos<br/>o restricciones inválidas"]
+    A --> B --> C
+    C -->|Acceso| D --> I
+    C -->|Recuperar| E --> F --> I
+    C -->|Editar| G --> I
+    C -->|Eliminar| H --> I
+    I -->|Resultado autorizado| J
+    J -->|Salir confirmado| K
+    B -->|Validación fallida| X
+    F -->|Token inválido| X
+    H -->|Restricción incumplida| X
+```
+
+authenticate() revisa token, vencimiento y estado en los accesos privados. Después de restablecer contraseña se vuelve al login; eliminar cuenta termina el acceso. El esquema no certifica entrega SMTP real.
+
 ## Tu funcionalidad completa
 
 La cuenta de una persona desde que se registra hasta que se va: registro, login, logout, recuperación, perfil personal y eliminación de cuenta. Login y registro son partes de una misma funcionalidad tuya; no se reparten entre nueve.

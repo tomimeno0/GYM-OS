@@ -2,6 +2,34 @@
 
 Guía del **GYM-OS completo**. Reparto por funcionalidades para estudiar y revisar; no acredita autoría ni cambios que todavía no realizó cada integrante.
 
+## Mapa visual para ubicarte
+
+La prescripción de la rutina se copia a una sesión independiente. Desde ese momento guardás lo realizado y el cierre conserva el registro histórico.
+
+```mermaid
+flowchart TD
+    A["👤 Usuario<br/>Elige rutina y día"]
+    B["🖥️ Routines.jsx<br/>RoutineDetail → WorkoutForm<br/>Inicio, avance y cierre"]
+    C["🚪 fitness.routes.js<br/>POST /api/v1/workouts<br/>Sesión y datos válidos"]
+    D["🧭 workouts.controller.js<br/>startWorkout()<br/>Rutina propia activa + día con ejercicios<br/>Impide otra sesión en curso"]
+    E[("💾 MySQL · Sequelize<br/>entrenamientos + entrenamiento_ejercicios<br/>Copia independiente de la rutina")]
+    F["✍️ Usuario registra lo realizado<br/>Series, repeticiones, carga y distancia"]
+    G["🔎 saveWorkout()<br/>PUT /api/v1/workouts/:id<br/>Valida propietario, estado y ejercicios"]
+    H{"¿Guarda avance o cierra?"}
+    I["▶️ Sigue iniciado<br/>Puede retomar y guardar otra vez"]
+    J["🏁 Cierre confirmado<br/>Completado, incompleto o cancelado<br/>Fija fecha final y libera sesión activa"]
+    K["📚 Workouts / WorkoutDetail<br/>Historial paginado y detalle<br/>Sesión cerrada sin edición"]
+    X["⛔ Rechazo controlado<br/>Sesión duplicada, datos ajenos<br/>o intento de editar un cierre"]
+    A --> B --> C --> D --> E --> F --> G --> H
+    H -->|Avance| I --> F
+    H -->|Cierre| J --> K
+    G -->|Guarda cambios juntos| E
+    D -->|No cumple las reglas| X
+    G -->|No cumple las reglas| X
+```
+
+Guardar avance mantiene iniciado. Completar, dejar incompleto o cancelar cierra la sesión y libera el lugar para otra; el historial cerrado no se modifica.
+
 ## Tu funcionalidad completa
 
 La sesión deportiva real: iniciar una rutina por día, guardar avances, marcar ejercicios realizados, registrar cargas/distancia, completar o cancelar y consultar el historial. Aunque corresponde a un solo CU, es un módulo completo con estados y datos propios.

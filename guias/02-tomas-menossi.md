@@ -2,6 +2,41 @@
 
 Guía del **GYM-OS completo**. Reparto por funcionalidades para estudiar y revisar; no acredita autoría ni cambios que todavía no realizó cada integrante.
 
+## Mapa visual para ubicarte
+
+Este mapa corresponde al código de referencia del final: además del chat, contiene generación y adaptación de planes. El diagrama exacto del chat de la preentrega está en tu guía de esa versión.
+
+```mermaid
+flowchart TD
+    A["👤 Usuario con consentimiento<br/>Assistant.jsx · Chat o PlanTool"]
+    B["🚪 fitness.routes.js<br/>Sesión, permisos y datos válidos"]
+    C{"¿Chat o plan?"}
+    D["💬 chat()<br/>ensureAiConsent() + conversación propia<br/>Reglas, historial y consulta"]
+    E["📋 Generar o adaptar<br/>generateRoutine() / adaptRoutine()<br/>generateDiet() / adaptDiet()"]
+    F["📦 context()<br/>Perfil, objetivo y actividad propios<br/>Plan existente al adaptar"]
+    G["📡 cohere.controller.js<br/>cohereChat()<br/>Clave privada + HTTPS + timeout"]
+    H["🧠 Cohere · Servicio externo<br/>Genera texto estructurado"]
+    I{"¿Qué resultado se valida?"}
+    J["🔎 CHAT · structuredChat()<br/>Formato y alcance<br/>Prepara pregunta y respuesta"]
+    K["🔎 PLAN · generateStructuredPlan()<br/>parseJson() + Zod<br/>validateAiRoutine() / validateAiDiet()<br/>Límites de estructura y valores"]
+    L["🔐 writeFitness()<br/>Revalida usuario y consentimiento<br/>dentro de la transacción"]
+    M[("💾 MySQL · Sequelize<br/>Chat: conversaciones y mensajes<br/>Planes: saveAiRoutine() / saveAiDiet()<br/>Usan tablas normales de rutinas y dietas")]
+    N["🖥️ Resultado<br/>Chat e historial o detalle del plan"]
+    X["⛔ Error controlado<br/>Sin consentimiento, salida inválida<br/>o proveedor no disponible"]
+    A --> B --> C
+    C -->|Chat| D --> G
+    C -->|Plan| E --> F --> G
+    G --> H --> I
+    I -->|Chat| J --> L
+    I -->|Plan| K --> L
+    L --> M --> N
+    G -->|Falla externa| X
+    K -->|Inválido tras reintentar| X
+    L -->|Consentimiento revocado| X
+```
+
+La pantalla solicita, el controlador prepara y valida, Cohere genera y Sequelize persiste. Estos métodos existen en el código final de referencia; este mapa no certifica todo su comportamiento ni traslada esas funciones a la preentrega.
+
 ## Tu funcionalidad completa
 
 La funcionalidad de IA completa: consentimiento, generación/adaptación de rutinas y dietas, chat entrenador/soporte, historial, validación del resultado y fallos del proveedor. No es responsable de copiar un token o mantener un modelo local: se usa una API remota.

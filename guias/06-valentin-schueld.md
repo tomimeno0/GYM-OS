@@ -2,6 +2,33 @@
 
 Guía del **GYM-OS completo**. Reparto por funcionalidades para estudiar y revisar; no acredita autoría ni cambios que todavía no realizó cada integrante.
 
+## Mapa visual para ubicarte
+
+Una dieta es un plan de comidas. Guardarla define lo previsto; registrar que alguien comió pasa al módulo de Mateo.
+
+```mermaid
+flowchart TD
+    A["👤 Usuario<br/>Define metas, comidas y horarios"]
+    B["🖥️ Nutrition.jsx<br/>DietEditor + DietForm + FoodEditor<br/>Alimentos, cantidades y valores base"]
+    C["🚪 fitness.routes.js + dietSchema<br/>POST /api/v1/diets<br/>o PUT /api/v1/diets/:id"]
+    D["🧭 nutrition.controller.js<br/>saveDiet() → persistDiet()<br/>Valida propietario y objetivo enlazado"]
+    E["🧮 calculateMacros()<br/>Recalcula cantidades y macros<br/>No confía solo en la vista previa"]
+    F[("💾 MySQL · Sequelize<br/>dietas + dieta_comidas<br/>Plan y comidas en una transacción")]
+    G["🖥️ DietDetail · getDiet()<br/>dietDetail() ordena comidas y suma<br/>Muestra metas y totales por separado"]
+    H["🤖 IA de Tomás<br/>Genera o adapta y valida<br/>saveAiDiet() reutiliza persistencia"]
+    I["🗂️ removeDiet()<br/>Baja lógica confirmada<br/>Conserva consumo histórico"]
+    X["⛔ Error controlado<br/>Datos ajenos, valores inválidos<br/>o nuevo objetivo no vigente"]
+    A --> B --> C --> D --> E --> F --> G
+    H -->|Origen IA y consentimiento| D
+    G -->|Editar| B
+    G -->|Confirmar baja| I
+    I -->|Actualiza estado| F
+    D -->|Regla incumplida| X
+    E -->|Totales fuera de rango| X
+```
+
+Una meta calórica y la suma de alimentos planificados son valores distintos. Una dieta guardada no genera automáticamente filas de comidas_consumidas.
+
 ## Tu funcionalidad completa
 
 El plan de alimentación: comidas por horario, alimentos y cantidades, objetivos nutricionales, detalle, edición y baja. Planificar una dieta es una funcionalidad distinta de registrar lo que efectivamente se comió.

@@ -2,6 +2,39 @@
 
 Guía del **GYM-OS completo**. Reparto por funcionalidades para estudiar y revisar; no acredita autoría ni cambios que todavía no realizó cada integrante.
 
+## Mapa visual para ubicarte
+
+El panel muestra acciones, pero el servidor decide si están permitidas. Las escrituras verifican integridad antes de guardar; la consulta de integridad solo informa.
+
+```mermaid
+flowchart TD
+    A["👤 Administrador autenticado<br/>Admin.jsx · Usuarios, roles y reportes"]
+    B["🚪 admin.routes.js<br/>requireAuth() + permit()<br/>GET y mutaciones /api/v1/admin"]
+    D{"¿Modifica o consulta?"}
+    E["✏️ OPERACIÓN CONFIRMADA<br/>saveRole() / assignRoles()<br/>changeStatus() / removeUser() / deleteRole()"]
+    subgraph TX["🔐 Escritura dentro de atomic()"]
+        G["Bloquea escritura y verifica integridad"]
+        C["authorizeActor()<br/>Revalida cuenta activa y permisos"]
+        F["Restricciones del cambio<br/>Protege último administrador y roles del sistema<br/>No elimina roles asignados"]
+        H[("💾 MySQL · Sequelize<br/>usuarios, roles y usuario_roles<br/>Revoca sesiones cuando corresponde<br/>audit() registra y signDatabase() firma")]
+        G --> C --> F --> H
+    end
+    I["📚 listUsers() / listRoles() / listAudit()<br/>Lectura autorizada dentro de verified()<br/>Filtros y páginas"]
+    J["🔬 integrityReport() → inspectIntegrity()<br/>Autoriza y compara DVH / DVV<br/>Reporta sin reparar ni ocultar cambios"]
+    K["🖥️ Panel actualizado<br/>Resultado o reporte de integridad"]
+    X["⛔ Rechazo controlado<br/>Permiso insuficiente, restricción<br/>o datos alterados"]
+    A --> B --> D
+    D -->|Modificar| E --> G
+    H -->|Confirma transacción| K
+    D -->|Consultar listados| I --> K
+    D -->|Verificar integridad| J --> K
+    C -->|Sin permiso| X
+    F -->|Restricción incumplida| X
+    G -->|Integridad inválida: no guarda| X
+```
+
+Cancelar el diálogo no envía cambios. Las restricciones se comprueban dentro de la operación protegida por transacción; DVH y DVV detectan alteraciones y no se recalculan para esconderlas.
+
 ## Tu funcionalidad completa
 
 El panel administrativo completo: buscar usuarios, bloquear/activar/eliminar, crear/modificar/asignar/borrar roles y consultar bitácora e integridad. Seguridad y firmas se estudian en cuanto permiten operar y proteger estas funciones, no como una novena microtarea artificial.

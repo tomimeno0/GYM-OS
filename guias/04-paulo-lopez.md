@@ -2,6 +2,33 @@
 
 Guía del **GYM-OS completo**. Reparto por funcionalidades para estudiar y revisar; no acredita autoría ni cambios que todavía no realizó cada integrante.
 
+## Mapa visual para ubicarte
+
+La meta tiene un valor inicial, una unidad y un destino. progressData() elige peso, grasa, distancia o frecuencia según el objetivo; goalPercentage() calcula el avance.
+
+```mermaid
+flowchart TD
+    A["👤 Usuario con medición previa<br/>Define tipo, valor, unidad y fechas"]
+    B["🖥️ Fitness.jsx<br/>Goals + GoalForm"]
+    C["🚪 fitness.routes.js<br/>POST /api/v1/goals<br/>Valida el contrato con Zod"]
+    D["🧭 fitness.controller.js<br/>createGoal() + validateGoalValues()<br/>Unidad, dirección y valor coherentes<br/>Un solo objetivo activo"]
+    E[("💾 MySQL · Sequelize<br/>objetivos + medición de partida<br/>Conserva el valor inicial")]
+    F["📈 CONSULTAR AVANCE<br/>progressData() + goalPercentage()<br/>Compara valor inicial, actual y meta"]
+    G["🖥️ Objetivos / progreso<br/>Muestra porcentaje o falta de datos"]
+    H{"¿Qué confirma el usuario?"}
+    I["✅ completeGoal()<br/>Objetivo activo → completado<br/>Conserva fecha y vínculo histórico"]
+    J["🗂️ removeGoal()<br/>Baja lógica<br/>Libera la meta activa"]
+    X["⛔ Rechazo controlado<br/>Sin medidas, segunda meta activa<br/>o valores incompatibles"]
+    A --> B --> C --> D --> E --> F --> G --> H
+    H -->|Completar| I
+    H -->|Dar de baja| J
+    I -->|Actualiza estado| E
+    J -->|Actualiza estado| E
+    D -->|No cumple las reglas| X
+```
+
+El valor inicial se conserva al crear la meta; el actual se obtiene de mediciones o actividad. Un porcentaje no marca automáticamente la meta como completada: esa acción requiere confirmación.
+
 ## Tu funcionalidad completa
 
 Definir la meta de una persona, validar que tenga sentido para su perfil, mostrar su avance y completar/eliminarla con confirmación. Te corresponde la funcionalidad entera, desde el formulario hasta las reglas de un único objetivo activo.

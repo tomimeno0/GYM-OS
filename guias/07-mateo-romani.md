@@ -2,6 +2,37 @@
 
 Guía del **GYM-OS completo**. Reparto por funcionalidades para estudiar y revisar; no acredita autoría ni cambios que todavía no realizó cada integrante.
 
+## Mapa visual para ubicarte
+
+Tu bloque registra lo realmente comido y lo compara con el plan. La búsqueda externa ofrece valores para revisar; el servidor vuelve a calcular los totales.
+
+```mermaid
+flowchart TD
+    A["👤 Usuario<br/>Elige día y registra una comida real"]
+    B["🖥️ Nutrition.jsx<br/>Nutrition + ConsumedForm + FoodEditor<br/>Fecha, alimentos y cantidades"]
+    C["🔎 FoodSearch<br/>GET /api/v1/foods<br/>searchFoods() + normalizeFood()"]
+    D["🌐 Open Food Facts<br/>Fuente externa de alimentos<br/>No es Cohere ni un modelo IA"]
+    E["🚪 POST /api/v1/consumed<br/>o PUT /api/v1/consumed/:id<br/>Validación de datos"]
+    F["🧭 nutrition.controller.js<br/>saveConsumed() + calculateMacros()<br/>Propietario, fecha y recálculo de cantidades"]
+    G[("💾 MySQL · Sequelize<br/>comidas_consumidas<br/>Consumo real con macros recalculados")]
+    H["📊 GET /api/v1/nutrition<br/>getNutrition() → nutritionData()<br/>dayRange() delimita día según zona horaria"]
+    I[("📋 Dieta elegida o última activa<br/>Metas del plan de Valentín")]
+    J["🖥️ Resumen diario<br/>Consumo real frente a metas<br/>No supone que se comió todo el plan"]
+    K["🗑️ removeConsumed()<br/>Eliminación confirmada del consumo<br/>No elimina la dieta"]
+    X["⛔ Error controlado<br/>Fecha futura, valores inválidos<br/>o proveedor no disponible"]
+    A --> B --> E --> F --> G
+    B -->|Búsqueda opcional| C --> D
+    D -->|Valores normalizados para revisar| B
+    G -->|Suma consumo del día| H
+    I -->|Aporta las metas| H --> J
+    J -->|Editar consumo| B
+    J -->|Eliminar consumo| K
+    F -->|Regla incumplida| X
+    C -->|Falla externa| X
+```
+
+Valentín planifica; vos registrás consumo y consultás macros. estimate() es una vista previa en React; calculateMacros() vuelve a calcular en servidor antes de guardar.
+
 ## Tu funcionalidad completa
 
 Registrar lo que efectivamente comió el usuario, editarlo o eliminarlo, buscar datos nutricionales y comparar el consumo diario con un plan. Es un módulo de seguimiento, separado del editor de dietas de Valentín.

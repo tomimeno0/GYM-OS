@@ -2,6 +2,33 @@
 
 Guía del **GYM-OS completo**. Reparto por funcionalidades para estudiar y revisar; no acredita autoría ni cambios que todavía no realizó cada integrante.
 
+## Mapa visual para ubicarte
+
+El plan empieza con la búsqueda de ejercicios y termina en una rutina consultable. El entrenamiento que se inicia desde ella pertenece al módulo de Iván.
+
+```mermaid
+flowchart TD
+    A["👤 Usuario<br/>Crea o edita una rutina manual"]
+    B["🖥️ Routines.jsx<br/>RoutineEditor + RoutineForm<br/>Días, ejercicios, series y descansos"]
+    C["📖 Catálogo textual<br/>searchExercises() / getExercise()<br/>También admite ejercicios manuales"]
+    D["🚪 fitness.routes.js<br/>POST /api/v1/routines<br/>o PUT /api/v1/routines/:id<br/>routineSchema valida los datos"]
+    E["🧭 routines.controller.js<br/>saveRoutine() → persistRoutine()<br/>normalizeExercises() valida orden y catálogo<br/>Comprueba propietario y objetivo"]
+    F[("💾 MySQL · Sequelize<br/>rutinas + rutina_ejercicios<br/>Cabecera y ejercicios juntos<br/>Transacción con bitácora e integridad")]
+    G["🖥️ RoutineDetail<br/>getRoutine() carga el plan guardado"]
+    H["🏋️ Iván · startWorkout()<br/>Copia el plan al iniciar una sesión<br/>Las sesiones previas no cambian"]
+    I["🗂️ removeRoutine()<br/>Baja lógica confirmada<br/>No permite sesión en curso"]
+    X["⛔ Error controlado<br/>Orden repetido, catálogo inexistente<br/>o registro ajeno"]
+    A --> B
+    C -->|Seleccionar ejercicio| B
+    B --> D --> E --> F --> G
+    G -->|Comenzar entrenamiento| H
+    G -->|Confirmar baja| I
+    I -->|Actualiza estado sin borrar historial| F
+    E -->|Datos o permisos inválidos| X
+```
+
+En el final también existe saveAiRoutine(): Tomás genera y valida el plan, y tu módulo reutiliza persistRoutine() con origen IA. El catálogo sigue siendo JSON de lectura y la edición no cambia sesiones antiguas.
+
 ## Tu funcionalidad completa
 
 Un plan de entrenamiento completo: buscar ejercicios, organizar días, definir series/repeticiones/carga/descanso, consultar, modificar y dar de baja rutinas. Sos responsable de esta experiencia entera, no sólo de una tabla.
